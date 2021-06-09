@@ -19,8 +19,6 @@ class Game
 	std::unordered_map<std::string, SDL_Texture*> mTextures;
 	std::vector<class SpriteComponent*> mSprites;
 
-	class Ship* mShip;
-
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();

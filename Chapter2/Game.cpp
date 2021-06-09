@@ -1,9 +1,7 @@
 #include "Game.h"
 #include "Ship.h"
-#include "SpriteComponent.h"
-#include "BGSpriteComponent.h"
+#include "TileMapComponent.h"
 #include <SDL_image.h>
-
 
 void Game::ProcessInput()
 {
@@ -24,7 +22,6 @@ void Game::ProcessInput()
         mIsRunning = false;
     }
 
-    mShip->ProcessKeyboard(state);
 }
 
 void Game::UpdateGame()
@@ -80,30 +77,26 @@ void Game::GenerateOutput()
 
 void Game::LoadData()
 {
-    mShip = new Ship(this);
-    mShip->SetPosition(Math::Vector2(100.f, 384.f));
-    mShip->SetScale(1.5f);
+    Actor* tmp = new Actor(this);
+    tmp->SetPosition(Math::Vector2( 1024 / 2, 768 / 2 ));
 
-    Actor* temp = new Actor(this);
-    temp->SetPosition(Math::Vector2(512.f, 384.f));
+    SDL_Texture* atlasTexture = GetTexture("Assets/Tiles.png");
+
+    TileMapComponent* tmc = new TileMapComponent(tmp);
+    tmc->SetScreenSize(Math::Vector2(1024, 768));
+    tmc->SetAtlasTexture(atlasTexture, 8, 24);
+    tmc->LoadCSV("Assets/MapLayer1.csv");
     
-    BGSpriteComponent* bg = new BGSpriteComponent(temp);
-    bg->SetScreenSize(Math::Vector2(1024.f, 768.f));
-    std::vector<SDL_Texture*> bgtexs = {
-        GetTexture("Assets/Farback01.png"),
-        GetTexture("Assets/Farback02.png"),
-    };
-    bg->SetBGTextures(bgtexs);
-    bg->SetScrollSpeed(-100.f);
+    tmc = new TileMapComponent(tmp, 90);
+    tmc->SetScreenSize(Math::Vector2(1024, 768));
+    tmc->SetAtlasTexture(atlasTexture, 8, 24);
+    tmc->LoadCSV("Assets/MapLayer2.csv");
 
-    bg = new BGSpriteComponent(temp, 50);
-    bg->SetScreenSize(Math::Vector2(1024.f, 768.f));
-    bgtexs = {
-        GetTexture("Assets/Stars.png"),
-        GetTexture("Assets/Stars.png"),
-    };
-    bg->SetBGTextures(bgtexs);
-    bg->SetScrollSpeed(-200.f);
+    tmc = new TileMapComponent(tmp, 80);
+    tmc->SetScreenSize(Math::Vector2(1024, 768));
+    tmc->SetAtlasTexture(atlasTexture, 8, 24);
+    tmc->LoadCSV("Assets/MapLayer3.csv");
+    
 }
 
 void Game::UnloadData()
@@ -125,8 +118,7 @@ Game::Game()    :
     mRenderer{ nullptr },
     mIsRunning{ true },
     mTickCount{ 0 },
-    mUpdatingActor{ false },
-    mShip{ nullptr }
+    mUpdatingActor{ false }
 {
 }
 
@@ -140,7 +132,7 @@ bool Game::Initialize()
     }
 
     mWindow = SDL_CreateWindow(
-        "Game Programming in C++ (Chapter 2)",
+        "Game Programming in C++ (Chapter 2 Exercise 3)",
         100, 100,
         1024, 768,
         0
