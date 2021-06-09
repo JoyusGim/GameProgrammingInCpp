@@ -14,7 +14,7 @@ SpriteComponent::SpriteComponent(Actor* owner, int drawOrder)	:
 
 SpriteComponent::~SpriteComponent()
 {
-	mOwner->GetGame()->RemoveSprite(this);
+	mOwner->GetGame()->RemoveSpriteComponent(this);
 }
 
 void SpriteComponent::Draw(SDL_Renderer* renderer)
