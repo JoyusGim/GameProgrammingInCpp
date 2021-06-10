@@ -50,11 +50,6 @@ void TileMapComponent::Draw(SDL_Renderer* renderer)
 	}
 }
 
-void TileMapComponent::SetScreenSize(const Math::Vector2& screenSize)
-{
-	mScreeSize = screenSize;
-}
-
 void TileMapComponent::LoadCSV(const std::string& fileName)
 {
 	mTileMapWidth = 0;

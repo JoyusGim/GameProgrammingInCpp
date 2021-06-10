@@ -15,7 +15,6 @@ private:
 	int mAtlasTileNumY;
 	float mTileWidth;
 	float mTileHeight;
-	Math::Vector2 mScreeSize;
 
 public:
 	TileMapComponent(class Actor* owner, int drawOrder = 100);
@@ -23,7 +22,6 @@ public:
 
 	void Draw(struct SDL_Renderer* renderer) override;
 
-	void SetScreenSize(const Math::Vector2& screenSize);
 	void LoadCSV(const std::string& fileName);
 	void SetAtlasTexture(SDL_Texture* texture, int numX, int numY);
 };
