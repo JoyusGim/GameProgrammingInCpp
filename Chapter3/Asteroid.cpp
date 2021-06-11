@@ -5,7 +5,7 @@
 #include "CircleColliderComponent.h"
 #include "Game.h"
 
-Asteroid::Asteroid(Game* game)	:
+Asteroid::Asteroid(Game* game) :
 	Actor(game),
 	mCollider{ nullptr }
 {
@@ -18,7 +18,8 @@ Asteroid::Asteroid(Game* game)	:
 	sc->SetTexture(game->GetTexture("Assets/Asteroid.png"));
 
 	MoveComponent* mc = new MoveComponent(this);
-	mc->SetForwardSpeed(150.f);
+	mc->SetMass(100.0f);
+	mc->AddForce(GetForward() * 100000.f);
 
 	mCollider = new CircleColliderComponent(this);
 	mCollider->SetRadius(40.f);

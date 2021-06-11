@@ -7,7 +7,7 @@ class Laser :
     class CircleColliderComponent* mCollider;
 
 public:
-    Laser(class Game* game);
+    Laser(class Game* game, float rotate);
 
     void UpdateActor(float deltaTime) override;
 };

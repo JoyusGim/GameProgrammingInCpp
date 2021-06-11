@@ -18,6 +18,8 @@ Ship::Ship(Game* game)  :
     ic->SetBackKey(SDL_SCANCODE_S);
     ic->SetClockWiseKey(SDL_SCANCODE_D);
     ic->SetCounterClockWiseKey(SDL_SCANCODE_A);
+    ic->SetMass(2.f);
+
     SetPosition(1024 / 2, 768 / 2);
 }
 
@@ -30,7 +32,7 @@ void Ship::ActorInput(const uint8_t* keyState)
 {
     if (keyState[SDL_SCANCODE_SPACE] && mLaserColltime <= 0.f)
     {
-        Laser* laser = new Laser(GetGame());
+        Laser* laser = new Laser(GetGame(), GetRotate());
         laser->SetPosition(GetPosition() + GetForward() * 5.f);
         laser->SetRotate(GetRotate());
 
