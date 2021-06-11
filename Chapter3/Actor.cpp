@@ -6,7 +6,7 @@ Actor::Actor(Game* game)	:
 	mGame{ game },
 	mScale{ 1.f },
 	mRotate{ 0.f },
-	state{ State::ACTIVE }
+	mState{ State::ACTIVE }
 {
 	mGame->AddActor(this);
 }
@@ -32,6 +32,18 @@ void Actor::UpdateComponents(float deltaTime)
 	for (auto comp : mComponents)
 	{
 		comp->Update(deltaTime);
+	}
+}
+
+void Actor::ProcessInput(const uint8_t* keyState)
+{
+	if (mState == State::ACTIVE)
+	{
+		for (auto comp : mComponents)
+		{
+			comp->ProcessInput(keyState);
+		}
+		ActorInput(keyState);
 	}
 }
 
@@ -95,12 +107,19 @@ float Actor::GetRotate() const
 
 void Actor::SetState(State state)
 {
-	this->state = state;
+	this->mState = state;
 }
 
 Actor::State Actor::GetState() const
 {
-	return state;
+	return mState;
+}
+
+Math::Vector2 Actor::GetForward() const
+{
+	Math::Vector2 forward(cosf(mRotate), sinf(mRotate));
+
+	return forward;
 }
 
 class Game* Actor::GetGame() const

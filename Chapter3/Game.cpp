@@ -1,6 +1,7 @@
 #include "Game.h"
+#include "Asteroid.h"
 #include "Ship.h"
-#include "TileMapComponent.h"
+#include "SpriteComponent.h"
 #include <SDL_image.h>
 
 void Game::ProcessInput()
@@ -22,6 +23,12 @@ void Game::ProcessInput()
         mIsRunning = false;
     }
 
+    mUpdatingActor = true;
+    for (auto actor : mActors)
+    {
+        actor->ProcessInput(state);
+    }
+    mUpdatingActor = false;
 }
 
 void Game::UpdateGame()
@@ -64,7 +71,7 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput()
 {
-    SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(mRenderer, 220, 220, 220, 255);
     SDL_RenderClear(mRenderer);
 
     for (auto sprite : mSprites)
@@ -77,26 +84,12 @@ void Game::GenerateOutput()
 
 void Game::LoadData()
 {
-    Actor* tmp = new Actor(this);
-    tmp->SetPosition(Math::Vector2( 1024 / 2, 768 / 2 ));
+    new Ship(this);
 
-    SDL_Texture* atlasTexture = GetTexture("Assets/Tiles.png");
-
-    TileMapComponent* tmc = new TileMapComponent(tmp);
-    tmc->SetScreenSize(Math::Vector2(1024, 768));
-    tmc->SetAtlasTexture(atlasTexture, 8, 24);
-    tmc->LoadCSV("Assets/MapLayer1.csv");
-    
-    tmc = new TileMapComponent(tmp, 90);
-    tmc->SetScreenSize(Math::Vector2(1024, 768));
-    tmc->SetAtlasTexture(atlasTexture, 8, 24);
-    tmc->LoadCSV("Assets/MapLayer2.csv");
-
-    tmc = new TileMapComponent(tmp, 80);
-    tmc->SetScreenSize(Math::Vector2(1024, 768));
-    tmc->SetAtlasTexture(atlasTexture, 8, 24);
-    tmc->LoadCSV("Assets/MapLayer3.csv");
-    
+    for (int i = 0; i < 20; i++)
+    {
+        new Asteroid(this);
+    }
 }
 
 void Game::UnloadData()
@@ -132,7 +125,7 @@ bool Game::Initialize()
     }
 
     mWindow = SDL_CreateWindow(
-        "Game Programming in C++ (Chapter 2 Exercise 3)",
+        "Game Programming in C++ Chapter 3",
         100, 100,
         1024, 768,
         0

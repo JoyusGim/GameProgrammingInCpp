@@ -19,7 +19,7 @@ private:
 	Math::Vector2 mPosition;
 	float mScale;
 	float mRotate;
-	State state;
+	State mState;
 	std::vector<class Component*> mComponents;
 	class Game* mGame;
 
@@ -30,6 +30,8 @@ public:
 	void Update(float deltaTime);
 	void UpdateComponents(float deltaTime);
 	virtual void UpdateActor(float deltaTime) {}
+	void ProcessInput(const uint8_t* keyState);
+	virtual void ActorInput(const uint8_t* keyState) {}
 
 	void AddComponent(class Component* component);
 	void RemoveComponent(class Component* component);
@@ -43,5 +45,6 @@ public:
 	float GetRotate() const;
 	void SetState(State state);
 	State GetState() const;
+	Math::Vector2 GetForward() const;
 	class Game* GetGame() const;
 };

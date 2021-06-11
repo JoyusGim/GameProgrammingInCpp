@@ -1,81 +1,24 @@
 #include "Ship.h"
-#include "AnimSpriteComponent.h"
+#include "SpriteComponent.h"
+#include "InputComponent.h"
 #include "Game.h"
 
 Ship::Ship(Game* game)  :
-    Actor(game),
-    mRightSpeed{ 0.f },
-    mDownSpeed{ 0.f }
+    Actor(game)
 {
-    AnimSpriteComponent* asc = new AnimSpriteComponent(this);
-    std::vector<SDL_Texture*> anims = {
-        game->GetTexture("Assets/ship01.png"),
-        game->GetTexture("Assets/ship02.png"),
-        game->GetTexture("Assets/ship03.png"),
-        game->GetTexture("Assets/ship04.png"),
-    };
-    asc->SetAnimTextures(anims);
+    SpriteComponent* asc = new SpriteComponent(this);
+    asc->SetTexture(game->GetTexture("Assets/Ship.png"));
+
+    InputComponent* ic = new InputComponent(this);
+    ic->SetMaxForwardSpeed(150.f);
+    ic->SetMaxAngularSpeed(10.f);
+    ic->SetForwardKey(SDL_SCANCODE_W);
+    ic->SetBackKey(SDL_SCANCODE_S);
+    ic->SetClockWiseKey(SDL_SCANCODE_D);
+    ic->SetCounterClockWiseKey(SDL_SCANCODE_A);
 }
 
 void Ship::UpdateActor(float deltaTime)
 {
     Actor::UpdateActor(deltaTime);
-
-    Math::Vector2 pos = GetPosition();
-    pos.x += mRightSpeed * deltaTime;
-    pos.y += mDownSpeed * deltaTime;
-
-    // 화면의 왼쪽만 사용하도록 제한
-    if (pos.x < 25.0f)
-    {
-        pos.x = 25.0f;
-    }
-    else if (pos.x > 500.0f)
-    {
-        pos.x = 500.0f;
-    }
-    if (pos.y < 25.0f)
-    {
-        pos.y = 25.0f;
-    }
-    else if (pos.y > 743.0f)
-    {
-        pos.y = 743.0f;
-    }
-
-    SetPosition(pos);
-}
-
-void Ship::ProcessKeyboard(const uint8_t* state)
-{
-    mRightSpeed = 0.0f;
-    mDownSpeed = 0.0f;
-
-    if (state[SDL_SCANCODE_D])
-    {
-        mRightSpeed += 250.0f;
-    }
-    if (state[SDL_SCANCODE_A])
-    {
-        mRightSpeed -= 250.0f;
-    }
-
-    if (state[SDL_SCANCODE_S])
-    {
-        mDownSpeed += 300.0f;
-    }
-    if (state[SDL_SCANCODE_W])
-    {
-        mDownSpeed -= 300.0f;
-    }
-}
-
-float Ship::GetRightSpeed()
-{
-    return mRightSpeed;
-}
-
-float Ship::GetDownSpeed()
-{
-    return mDownSpeed;
 }
