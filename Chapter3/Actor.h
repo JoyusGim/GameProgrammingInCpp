@@ -38,7 +38,7 @@ public:
 
 	void SetPosition(float x, float y);
 	void SetPosition(const Math::Vector2& position);
-	Math::Vector2 GetPosition() const;
+	const Math::Vector2& GetPosition() const;
 	void SetScale(float scale);
 	float GetScale() const;
 	void SetRotate(float rotate);

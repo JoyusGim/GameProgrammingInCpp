@@ -2,10 +2,12 @@
 #include "Random.h"
 #include "SpriteComponent.h"
 #include "MoveComponent.h"
+#include "CircleColliderComponent.h"
 #include "Game.h"
 
 Asteroid::Asteroid(Game* game)	:
-	Actor(game)
+	Actor(game),
+	mCollider{ nullptr }
 {
 	Math::Vector2 pos = Random::GetVector(Math::Vector2::Zero,
 		Math::Vector2(1024.f, 768.f));
@@ -17,6 +19,16 @@ Asteroid::Asteroid(Game* game)	:
 
 	MoveComponent* mc = new MoveComponent(this);
 	mc->SetForwardSpeed(150.f);
+
+	mCollider = new CircleColliderComponent(this);
+	mCollider->SetRadius(40.f);
+
+	game->AddAsteroid(this);
+}
+
+Asteroid::~Asteroid()
+{
+	GetGame()->RemoveAsteroid(this);
 }
 
 void Asteroid::UpdateActor(float deltaTime)
@@ -29,4 +41,9 @@ void Asteroid::UpdateActor(float deltaTime)
 	else if (pos.y > 768.f) pos.y = 0;
 
 	SetPosition(pos);
+}
+
+CircleColliderComponent* Asteroid::GetCollider() const
+{
+	return mCollider;
 }

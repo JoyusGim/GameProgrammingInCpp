@@ -15,7 +15,7 @@ Actor::~Actor()
 {
 	mGame->RemoveActor(this);
 
-	while (mComponents.empty())
+	while (!mComponents.empty())
 	{
 		delete mComponents.back();
 	}
@@ -80,7 +80,7 @@ void Actor::SetPosition(const Math::Vector2& position)
 	mPosition = position;
 }
 
-Math::Vector2 Actor::GetPosition() const
+const Math::Vector2& Actor::GetPosition() const
 {
 	return mPosition;
 }

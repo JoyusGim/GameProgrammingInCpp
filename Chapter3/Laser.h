@@ -1,16 +1,14 @@
 #pragma once
 #include "Actor.h"
-class Asteroid :
+class Laser :
     public Actor
 {
+    float mLifetime;
     class CircleColliderComponent* mCollider;
 
 public:
-    Asteroid(class Game* game);
-    virtual ~Asteroid();
+    Laser(class Game* game);
 
     void UpdateActor(float deltaTime) override;
-
-    class CircleColliderComponent* GetCollider() const;
 };
 

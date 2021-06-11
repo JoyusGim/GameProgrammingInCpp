@@ -14,6 +14,7 @@ class Game
 
 	std::vector<class Actor*> mActors;
 	std::vector<class Actor*> mPendingActors;
+	std::vector<class Asteroid*> mAsteroids;
 	bool mUpdatingActor;
 
 	std::unordered_map<std::string, SDL_Texture*> mTextures;
@@ -40,5 +41,10 @@ public:
 	void RemoveSpriteComponent(class SpriteComponent* sprite);
 
 	SDL_Texture* GetTexture(const std::string& fileName);
+
+	void AddAsteroid(class Asteroid* asteroid);
+	void RemoveAsteroid(class Asteroid* asteroid);
+
+	std::vector<Asteroid*>& GetAsteroids();
 };
 

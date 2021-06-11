@@ -111,6 +111,11 @@ public:
 		return std::sqrtf(x * x + y * y);
 	}
 
+	float SquareLength() const
+	{
+		return x * x + y * y;
+	}
+
 	static const Vector2 Zero;
 	static const Vector2 UnitX;
 	static const Vector2 UnitY;

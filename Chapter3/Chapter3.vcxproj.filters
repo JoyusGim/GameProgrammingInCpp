@@ -57,6 +57,12 @@
     <ClCompile Include="InputComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="CircleColliderComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Laser.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimSpriteComponent.h">
@@ -96,6 +102,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="InputComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CircleColliderComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Laser.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

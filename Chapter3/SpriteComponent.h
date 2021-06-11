@@ -12,7 +12,7 @@ protected:
 
 public:
 	SpriteComponent(class Actor* owner, int drawOrder = 100);
-	~SpriteComponent();
+	virtual ~SpriteComponent();
 
 	virtual void Draw(struct SDL_Renderer* renderer);
 

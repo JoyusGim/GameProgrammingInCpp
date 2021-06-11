@@ -46,8 +46,8 @@ void Game::UpdateGame()
     {
         actor->Update(deltaTime);
     }
-
     mUpdatingActor = false;
+
     for (auto pending : mPendingActors)
     {
         mActors.emplace_back(pending);
@@ -261,4 +261,23 @@ SDL_Texture* Game::GetTexture(const std::string& fileName)
     }
         
     return texture;
+}
+
+void Game::AddAsteroid(Asteroid* asteroid)
+{
+    mAsteroids.push_back(asteroid);
+}
+
+void Game::RemoveAsteroid(Asteroid* asteroid)
+{
+    auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), asteroid);
+    if (iter != mAsteroids.end())
+    {
+        mAsteroids.erase(iter);
+    }
+}
+
+std::vector<Asteroid*>& Game::GetAsteroids()
+{
+    return mAsteroids;
 }
