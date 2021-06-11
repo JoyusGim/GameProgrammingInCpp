@@ -83,17 +83,14 @@ void Game::LoadData()
     SDL_Texture* atlasTexture = GetTexture("Assets/Tiles.png");
 
     TileMapComponent* tmc = new TileMapComponent(tmp);
-    tmc->SetScreenSize(Math::Vector2(1024, 768));
     tmc->SetAtlasTexture(atlasTexture, 8, 24);
     tmc->LoadCSV("Assets/MapLayer1.csv");
     
     tmc = new TileMapComponent(tmp, 90);
-    tmc->SetScreenSize(Math::Vector2(1024, 768));
     tmc->SetAtlasTexture(atlasTexture, 8, 24);
     tmc->LoadCSV("Assets/MapLayer2.csv");
 
     tmc = new TileMapComponent(tmp, 80);
-    tmc->SetScreenSize(Math::Vector2(1024, 768));
     tmc->SetAtlasTexture(atlasTexture, 8, 24);
     tmc->LoadCSV("Assets/MapLayer3.csv");
     
