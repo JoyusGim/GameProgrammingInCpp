@@ -14,11 +14,13 @@ class Game
 
 	std::vector<class Actor*> mActors;
 	std::vector<class Actor*> mPendingActors;
-	std::vector<class Asteroid*> mAsteroids;
 	bool mUpdatingActor;
 
 	std::unordered_map<std::string, SDL_Texture*> mTextures;
 	std::vector<class SpriteComponent*> mSprites;
+	
+	std::vector<class Enemy*> mEnemies;
+	class Grid* mGrid;
 
 	void ProcessInput();
 	void UpdateGame();
@@ -40,11 +42,12 @@ public:
 	void AddSpriteComponent(class SpriteComponent* sprite);
 	void RemoveSpriteComponent(class SpriteComponent* sprite);
 
+	void AddEnemy(class Enemy* enemy);
+	void RemoveEnemy(class Enemy* enemy);
+	std::vector<class Enemy*>& GetEnemies();
+
+	class Grid* GetGrid() const { return mGrid; }
+
 	SDL_Texture* GetTexture(const std::string& fileName);
-
-	void AddAsteroid(class Asteroid* asteroid);
-	void RemoveAsteroid(class Asteroid* asteroid);
-
-	std::vector<Asteroid*>& GetAsteroids();
 };
 

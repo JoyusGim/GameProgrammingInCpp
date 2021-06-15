@@ -1,6 +1,6 @@
 #include "Game.h"
-#include "Asteroid.h"
-#include "Ship.h"
+#include "Actor.h"
+#include "Grid.h"
 #include "SpriteComponent.h"
 #include <SDL_image.h>
 
@@ -84,12 +84,8 @@ void Game::GenerateOutput()
 
 void Game::LoadData()
 {
-    new Ship(this);
-
-    for (int i = 0; i < 20; i++)
-    {
-        new Asteroid(this);
-    }
+    mGrid = new Grid(this);
+    
 }
 
 void Game::UnloadData()
@@ -231,6 +227,26 @@ void Game::RemoveSpriteComponent(class SpriteComponent* sprite)
     mSprites.erase(iter);
 }
 
+void Game::AddEnemy(class Enemy* enemy)
+{
+    mEnemies.emplace_back(enemy);
+}
+
+void Game::RemoveEnemy(class Enemy* enemy)
+{
+    auto iter = std::find(mEnemies.begin(), mEnemies.end(), enemy);
+    if (iter != mEnemies.end())
+    {
+        std::iter_swap(iter, mEnemies.end() - 1);
+        mEnemies.pop_back();
+    }
+}
+
+std::vector<class Enemy*>& Game::GetEnemies()
+{
+    return mEnemies;
+}
+
 SDL_Texture* Game::GetTexture(const std::string& fileName)
 {
     SDL_Texture* texture = nullptr;
@@ -261,23 +277,4 @@ SDL_Texture* Game::GetTexture(const std::string& fileName)
     }
         
     return texture;
-}
-
-void Game::AddAsteroid(Asteroid* asteroid)
-{
-    mAsteroids.push_back(asteroid);
-}
-
-void Game::RemoveAsteroid(Asteroid* asteroid)
-{
-    auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), asteroid);
-    if (iter != mAsteroids.end())
-    {
-        mAsteroids.erase(iter);
-    }
-}
-
-std::vector<Asteroid*>& Game::GetAsteroids()
-{
-    return mAsteroids;
 }

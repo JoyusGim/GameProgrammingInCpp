@@ -117,7 +117,7 @@ Actor::State Actor::GetState() const
 
 Math::Vector2 Actor::GetForward() const
 {
-	Math::Vector2 forward(cosf(mRotate), sinf(mRotate));
+	Math::Vector2 forward(cosf(mRotate), -sinf(mRotate));
 
 	return forward;
 }

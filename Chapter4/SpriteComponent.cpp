@@ -36,7 +36,7 @@ void SpriteComponent::Draw(SDL_Renderer* renderer)
 			mTexture,
 			nullptr,
 			&r,
-			Math::RAD2DEG(mOwner->GetRotate()),
+			-Math::RAD2DEG(mOwner->GetRotate()),
 			nullptr,
 			SDL_FLIP_NONE
 		);
