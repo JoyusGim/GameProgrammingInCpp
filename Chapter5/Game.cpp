@@ -79,6 +79,8 @@ void Game::GenerateOutput()
 {
     glClearColor(0.86f, 0.86f, 0.86f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     mSpriteShader->SetActive();
     mSpriteVerts->SetActive();
@@ -118,7 +120,7 @@ void Game::UnloadData()
 bool Game::LoadShaders()
 {
     mSpriteShader = new Shader();
-    if(!mSpriteShader->Load("Shaders/Transform.vert", "Shaders/Transform.frag"))
+    if(!mSpriteShader->Load("Shaders/Sprite.vert", "Shaders/Sprite.frag"))
     {
         return false;
     }

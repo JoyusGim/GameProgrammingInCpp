@@ -179,6 +179,8 @@
   <ItemGroup>
     <None Include="Shaders\Basic.frag" />
     <None Include="Shaders\Basic.vert" />
+    <None Include="Shaders\Sprite.frag" />
+    <None Include="Shaders\Sprite.vert" />
     <None Include="Shaders\Transform.frag" />
     <None Include="Shaders\Transform.vert" />
   </ItemGroup>

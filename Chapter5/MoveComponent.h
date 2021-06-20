@@ -1,10 +1,13 @@
 #pragma once
 #include "Component.h"
+#include "Math.h"
 
 class MoveComponent : public Component
 {
+	float mMass;
 	float mAngularSpeed;
-	float mForwardSpeed;
+	Vector2 mVelocity;
+	Vector2 mAccumForce;
 
 public:
 	MoveComponent(class Actor* actor, int updateOrder = 10);
@@ -12,8 +15,10 @@ public:
 	void Update(float deltaTime) override;
 
 	float GetAngularSpeed() const;
-	float GetForwardSpeed() const;
 	void SetAngularSpeed(float speed);
-	void SetForwardSpeed(float speed);
+	float GetMass() const;
+	void SetMass(float mass);
+
+	void AddForce(const Vector2& force);
 };
 

@@ -5,15 +5,18 @@
 #include "MoveComponent.h"
 #include "SpriteComponent.h"
 
-Laser::Laser(Game* game)	:
+Laser::Laser(Game* game, float rotate)	:
 	Actor(game),
 	mLifetime{ 5.f }
 {
+	SetRotate(rotate);
+
 	SpriteComponent* sc = new SpriteComponent(this);
 	sc->SetTexture(game->GetTexture("Assets/Laser.png"));
 
 	MoveComponent* mc = new MoveComponent(this);
-	mc->SetForwardSpeed(800.f); 
+	mc->SetMass(0.1f);
+	mc->AddForce(GetForward() * 8000.f);
 
 	mCollider = new CircleColliderComponent(this);
 	mCollider->SetRadius(11.f);

@@ -6,7 +6,7 @@ Actor::Actor(Game* game)	:
 	mGame{ game },
 	mScale{ 1.f },
 	mRotate{ 0.f },
-	mRecomputeWorldTransform{ false },
+	mRecomputeWorldTransform{ true },
 	mState{ State::ACTIVE }
 {
 	mGame->AddActor(this);
@@ -98,11 +98,13 @@ void Actor::SetPosition(float x, float y)
 {
 	mPosition.x = x;
 	mPosition.y = y;
+	mRecomputeWorldTransform = true;
 }
 
 void Actor::SetPosition(const Vector2& position)
 {
 	mPosition = position;
+	mRecomputeWorldTransform = true;
 }
 
 const Vector2& Actor::GetPosition() const
@@ -113,6 +115,7 @@ const Vector2& Actor::GetPosition() const
 void Actor::SetScale(float scale)
 {
 	mScale = scale;
+	mRecomputeWorldTransform = true;
 }
 
 float Actor::GetScale() const
@@ -123,6 +126,7 @@ float Actor::GetScale() const
 void Actor::SetRotate(float rotate)
 {
 	mRotate = rotate;
+	mRecomputeWorldTransform = true;
 }
 
 float Actor::GetRotate() const
@@ -147,7 +151,7 @@ Actor::State Actor::GetState() const
 
 Vector2 Actor::GetForward() const
 {
-	Vector2 forward(cosf(mRotate), -sinf(mRotate));
+	Vector2 forward(cosf(mRotate), sinf(mRotate));
 
 	return forward;
 }

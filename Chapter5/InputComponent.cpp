@@ -1,4 +1,5 @@
 #include "InputComponent.h"
+#include "Actor.h"
 
 InputComponent::InputComponent(Actor* actor)	:
 	MoveComponent(actor),
@@ -22,16 +23,16 @@ void InputComponent::ProcessInput(const uint8_t* keyState)
 	{
 		forward -= mMaxForwardSpeed;
 	}
-	SetForwardSpeed(forward);
+	AddForce(mOwner->GetForward() * forward);
 
 	float angular = 0.f;
 	if (keyState[mClockWiseKey])
 	{
-		angular += mMaxAngularSpeed;
+		angular -= mMaxAngularSpeed;
 	}
 	if (keyState[mCounterClockWiseKey])
 	{
-		angular -= mMaxAngularSpeed;
+		angular += mMaxAngularSpeed;
 	}
 	SetAngularSpeed(angular);
 }
