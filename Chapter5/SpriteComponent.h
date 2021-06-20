@@ -5,7 +5,7 @@
 class SpriteComponent : public Component
 {
 protected:
-	struct SDL_Texture* mTexture;
+	class Texture* mTexture;
 	int mDrawOrder;
 	int mTexWidth;
 	int mTexHeight;
@@ -14,9 +14,9 @@ public:
 	SpriteComponent(class Actor* owner, int drawOrder = 100);
 	virtual ~SpriteComponent();
 
-	virtual void Draw(struct SDL_Renderer* renderer);
+	virtual void Draw(class Shader* shader);
 
-	void SetTexture(struct SDL_Texture* texture);
+	void SetTexture(class Texture* texture);
 	int GetDrawOrder() const;
 };
 

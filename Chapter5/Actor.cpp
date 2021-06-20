@@ -6,6 +6,7 @@ Actor::Actor(Game* game)	:
 	mGame{ game },
 	mScale{ 1.f },
 	mRotate{ 0.f },
+	mRecomputeWorldTransform{ false },
 	mState{ State::ACTIVE }
 {
 	mGame->AddActor(this);
@@ -23,8 +24,15 @@ Actor::~Actor()
 
 void Actor::Update(float deltaTime)
 {
-	UpdateComponents(deltaTime);
-	UpdateActor(deltaTime);
+	if (mState == State::ACTIVE)
+	{
+		ComputeWorldTransform();
+
+		UpdateComponents(deltaTime);
+		UpdateActor(deltaTime);
+
+		ComputeWorldTransform();
+	}
 }
 
 void Actor::UpdateComponents(float deltaTime)
@@ -44,6 +52,23 @@ void Actor::ProcessInput(const uint8_t* keyState)
 			comp->ProcessInput(keyState);
 		}
 		ActorInput(keyState);
+	}
+}
+
+void Actor::ComputeWorldTransform()
+{
+	if (mRecomputeWorldTransform)
+	{
+		mWorldTransform = Matrix4::CreateScale(mScale);
+		mWorldTransform *= Matrix4::CreateRotationZ(mRotate);
+		mWorldTransform *= Matrix4::CreateTranslation(Vector3(mPosition.x, mPosition.y, 0.f));
+
+		for (auto comp : mComponents)
+		{
+			comp->OnUpdateWorldTransform();
+		}
+
+		mRecomputeWorldTransform = false;
 	}
 }
 
@@ -75,12 +100,12 @@ void Actor::SetPosition(float x, float y)
 	mPosition.y = y;
 }
 
-void Actor::SetPosition(const Math::Vector2& position)
+void Actor::SetPosition(const Vector2& position)
 {
 	mPosition = position;
 }
 
-const Math::Vector2& Actor::GetPosition() const
+const Vector2& Actor::GetPosition() const
 {
 	return mPosition;
 }
@@ -105,6 +130,11 @@ float Actor::GetRotate() const
 	return mRotate;
 }
 
+const Matrix4& Actor::GetWorldTransform() const
+{
+	return mWorldTransform;
+}
+
 void Actor::SetState(State state)
 {
 	this->mState = state;
@@ -115,9 +145,9 @@ Actor::State Actor::GetState() const
 	return mState;
 }
 
-Math::Vector2 Actor::GetForward() const
+Vector2 Actor::GetForward() const
 {
-	Math::Vector2 forward(cosf(mRotate), -sinf(mRotate));
+	Vector2 forward(cosf(mRotate), -sinf(mRotate));
 
 	return forward;
 }

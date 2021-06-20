@@ -1,8 +1,13 @@
 #include "Game.h"
 #include "Actor.h"
-#include "Grid.h"
+#include "Asteroid.h"
+#include "Ship.h"
 #include "SpriteComponent.h"
+#include "Shader.h"
+#include "VertexArray.h"
+#include "Texture.h"
 #include <SDL_image.h>
+#include <glew.h>
 
 void Game::ProcessInput()
 {
@@ -50,6 +55,7 @@ void Game::UpdateGame()
 
     for (auto pending : mPendingActors)
     {
+        pending->ComputeWorldTransform();
         mActors.emplace_back(pending);
     }
     mPendingActors.clear();
@@ -71,21 +77,28 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput()
 {
-    SDL_SetRenderDrawColor(mRenderer, 220, 220, 220, 255);
-    SDL_RenderClear(mRenderer);
+    glClearColor(0.86f, 0.86f, 0.86f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    mSpriteShader->SetActive();
+    mSpriteVerts->SetActive();
 
     for (auto sprite : mSprites)
     {
-        sprite->Draw(mRenderer);
+        sprite->Draw(mSpriteShader);
     }
 
-    SDL_RenderPresent(mRenderer);    
+    SDL_GL_SwapWindow(mWindow);
 }
 
 void Game::LoadData()
 {
-    mGrid = new Grid(this);
-    
+    new Ship(this);
+
+    for (int i = 0; i < 20; i++)
+    {
+        new Asteroid(this);
+    }
 }
 
 void Game::UnloadData()
@@ -97,17 +110,54 @@ void Game::UnloadData()
 
     for (auto tex : mTextures)
     {
-        SDL_DestroyTexture(tex.second);
+        tex.second->Unload();
     }
     mTextures.clear();
 }
 
+bool Game::LoadShaders()
+{
+    mSpriteShader = new Shader();
+    if(!mSpriteShader->Load("Shaders/Transform.vert", "Shaders/Transform.frag"))
+    {
+        return false;
+    }
+
+    mSpriteShader->SetActive();
+
+    Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
+    mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
+
+    return true;
+}
+
+bool Game::InitSpriteVerts()
+{
+    float vertexBuffer[] = {
+        -0.5f, 0.5f, 0.f, 0.f, 0.f,
+        0.5f, 0.5f, 0.f, 1.f, 0.f,
+        0.5f, -0.5f, 0.f, 1.f, 1.f,
+        -0.5f, -0.5f, 0.f, 0.f, 1.f
+    };
+
+    unsigned int indexBuffer[] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    mSpriteVerts = new VertexArray(vertexBuffer, 4, indexBuffer, 6);
+
+    return true;
+}
+
 Game::Game()    :
     mWindow{ nullptr },
-    mRenderer{ nullptr },
+    mContext{ },
     mIsRunning{ true },
     mTickCount{ 0 },
-    mUpdatingActor{ false }
+    mUpdatingActor{ false },
+    mSpriteShader{ nullptr },
+    mSpriteVerts{ nullptr }
 {
 }
 
@@ -119,12 +169,24 @@ bool Game::Initialize()
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
         return false;
     }
+    
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
     mWindow = SDL_CreateWindow(
         "Game Programming in C++ Chapter 5",
         100, 100,
         1024, 768,
-        0
+        SDL_WINDOW_OPENGL
     );
 
     if (!mWindow)
@@ -133,17 +195,15 @@ bool Game::Initialize()
         return false;
     }
 
-    mRenderer = SDL_CreateRenderer(
-        mWindow,
-        -1,
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
-    );
+    mContext = SDL_GL_CreateContext(mWindow);
 
-    if (!mRenderer)
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK)
     {
-        SDL_Log("Failed to create renderer: %s", SDL_GetError());
+        SDL_Log("Failed to initialize GLEW.");
         return false;
     }
+    glGetError();
 
     if (IMG_Init(IMG_INIT_PNG) == 0)
     {
@@ -151,6 +211,12 @@ bool Game::Initialize()
         return false;
     }
 
+    if (!LoadShaders())
+        return false;
+
+    if (!InitSpriteVerts())
+        return false;
+        
     LoadData();
 
     mTickCount = SDL_GetTicks();
@@ -172,7 +238,7 @@ void Game::Shutdown()
 {
     UnloadData();
     IMG_Quit();
-    SDL_DestroyRenderer(mRenderer);
+    SDL_GL_DeleteContext(mContext);
     SDL_DestroyWindow(mWindow);
     SDL_Quit();
 }
@@ -227,29 +293,9 @@ void Game::RemoveSpriteComponent(class SpriteComponent* sprite)
     mSprites.erase(iter);
 }
 
-void Game::AddEnemy(class Enemy* enemy)
+Texture* Game::GetTexture(const std::string& fileName)
 {
-    mEnemies.emplace_back(enemy);
-}
-
-void Game::RemoveEnemy(class Enemy* enemy)
-{
-    auto iter = std::find(mEnemies.begin(), mEnemies.end(), enemy);
-    if (iter != mEnemies.end())
-    {
-        std::iter_swap(iter, mEnemies.end() - 1);
-        mEnemies.pop_back();
-    }
-}
-
-std::vector<class Enemy*>& Game::GetEnemies()
-{
-    return mEnemies;
-}
-
-SDL_Texture* Game::GetTexture(const std::string& fileName)
-{
-    SDL_Texture* texture = nullptr;
+    Texture* texture = nullptr;
     
     auto iter = mTextures.find(fileName);
     if (iter != mTextures.end())
@@ -258,23 +304,31 @@ SDL_Texture* Game::GetTexture(const std::string& fileName)
     }
     else
     {
-        SDL_Surface* surf = IMG_Load(fileName.c_str());
-        if (!surf)
-        {
-            SDL_Log("Failed to load texture file %s", fileName.c_str());
+        texture = new Texture();
+        if (!texture->Load(fileName))
             return nullptr;
-        }
-
-        texture = SDL_CreateTextureFromSurface(mRenderer, surf);
-        SDL_FreeSurface(surf);
-        if (!texture)
-        {
-            SDL_Log("Failed to convert surface to texture for %s", fileName.c_str());
-            return nullptr;
-        }
 
         mTextures.emplace(fileName.c_str(), texture);
     }
         
     return texture;
+}
+
+void Game::AddAsteroid(Asteroid* asteroid)
+{
+    mAsteroids.push_back(asteroid);
+}
+
+void Game::RemoveAsteroid(Asteroid* asteroid)
+{
+    auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), asteroid);
+    if (iter != mAsteroids.end())
+    {
+        mAsteroids.erase(iter);
+    }
+}
+
+std::vector<Asteroid*>& Game::GetAsteroids()
+{
+    return mAsteroids;
 }

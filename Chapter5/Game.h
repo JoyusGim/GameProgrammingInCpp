@@ -7,21 +7,21 @@
 class Game
 {
 	SDL_Window* mWindow;
-	SDL_Renderer* mRenderer;
+	SDL_GLContext mContext;
 	bool mIsRunning;
 
 	Uint32 mTickCount;
 
 	std::vector<class Actor*> mActors;
 	std::vector<class Actor*> mPendingActors;
+	std::vector<class Asteroid*> mAsteroids;
 	bool mUpdatingActor;
 
-	std::unordered_map<std::string, SDL_Texture*> mTextures;
+	std::unordered_map<std::string, class Texture*> mTextures;
 	std::vector<class SpriteComponent*> mSprites;
+	class Shader* mSpriteShader;
+	class VertexArray* mSpriteVerts;
 	
-	std::vector<class Enemy*> mEnemies;
-	class Grid* mGrid;
-
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
@@ -29,6 +29,8 @@ class Game
 	void LoadData();
 	void UnloadData();
 
+	bool LoadShaders();
+	bool InitSpriteVerts();
 public:
 	Game();
 
@@ -42,12 +44,11 @@ public:
 	void AddSpriteComponent(class SpriteComponent* sprite);
 	void RemoveSpriteComponent(class SpriteComponent* sprite);
 
-	void AddEnemy(class Enemy* enemy);
-	void RemoveEnemy(class Enemy* enemy);
-	std::vector<class Enemy*>& GetEnemies();
+	class Texture* GetTexture(const std::string& fileName);
 
-	class Grid* GetGrid() const { return mGrid; }
+	void AddAsteroid(class Asteroid* asteroid);
+	void RemoveAsteroid(class Asteroid* asteroid);
 
-	SDL_Texture* GetTexture(const std::string& fileName);
+	std::vector<Asteroid*>& GetAsteroids();
 };
 
