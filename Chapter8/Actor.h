@@ -30,8 +30,8 @@ public:
 	void Update(float deltaTime);
 	void UpdateComponents(float deltaTime);
 	virtual void UpdateActor(float deltaTime) {}
-	void ProcessInput(const uint8_t* keyState);
-	virtual void ActorInput(const uint8_t* keyState) {}
+	void ProcessInput(const struct InputState& keyState);
+	virtual void ActorInput(const struct InputState& keyState) {}
 
 	void ComputeWorldTransform();
 

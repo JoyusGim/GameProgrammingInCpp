@@ -10,6 +10,6 @@ public:
 	CameraActor(class Game* game);
 
 	void UpdateActor(float deltaTime) override;
-	void ActorInput(const uint8_t* keystate) override;
+	void ActorInput(const struct InputState& keystate) override;
 };
 

@@ -2,6 +2,7 @@
 #include "Actor.h"
 #include "Renderer.h"
 #include "AudioSystem.h"
+#include "InputSystem.h"
 #include "SpriteComponent.h"
 #include "MeshComponent.h"
 #include "Mesh.h"
@@ -12,6 +13,8 @@
 
 void Game::ProcessInput()
 {
+    mInputSystem->PrepareForUpdate();
+
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
@@ -20,11 +23,17 @@ void Game::ProcessInput()
         case SDL_QUIT:
             mIsRunning = false;
             break;
+        case SDL_MOUSEWHEEL:
+            mInputSystem->ProcessEvent(event);
+            break;
+        default:
+            break;
         }
     }
-
-    const Uint8* state = SDL_GetKeyboardState(nullptr);
-    if (state[SDL_SCANCODE_ESCAPE])
+    
+    mInputSystem->Update();
+    const InputState& state = mInputSystem->GetState();
+    if (state.Keyboard.GetKeyState(SDL_SCANCODE_ESCAPE) == Released)
     {
         mIsRunning = false;
     }
@@ -85,7 +94,6 @@ void Game::GenerateOutput()
 
 void Game::LoadData()
 {
-    
     Actor* a = new Actor(this);
     a->SetPosition(Vector3(200.0f, 75.0f, 0.0f));
     a->SetScale(100.0f);
@@ -187,18 +195,32 @@ Game::Game()    :
     mAudioSystem{ nullptr },
     mIsRunning{ true },
     mTickCount{ 0 },
-    mUpdatingActor{ false }
+    mUpdatingActor{ false },
+    mCameraActor{ nullptr },
+    mInputSystem{ nullptr }
 {
 }
 
 bool Game::Initialize()
 {
+    int sdlResult = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER);
+
+    if (sdlResult != 0)
+    {
+        SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+        return false;
+    }
+
     mRenderer = new Renderer(this);
     if (!mRenderer->Initialize(1024.f, 768.f))
         return false;
 
     mAudioSystem = new AudioSystem(this);
     if (!mAudioSystem->Initialize())
+        return false;
+
+    mInputSystem = new InputSystem();
+    if (!mInputSystem->Initialize())
         return false;
 
     LoadData();

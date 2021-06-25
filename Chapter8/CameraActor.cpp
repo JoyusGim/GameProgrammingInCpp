@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Renderer.h"
 #include "AudioSystem.h"
+#include "InputSystem.h"
 
 CameraActor::CameraActor(Game* game)	:
 	Actor(game)
@@ -24,27 +25,30 @@ void CameraActor::UpdateActor(float deltaTime)
 	GetGame()->GetAudioSystem()->SetListener(view);
 }
 
-void CameraActor::ActorInput(const uint8_t* keystate)
+void CameraActor::ActorInput(const InputState& keystate)
 {
 	float forwardSpeed = 0.f;
 	float angularSpeed = 0.f;
 
-	if (keystate[SDL_SCANCODE_W])
+	if (keystate.Keyboard.GetKeyState(SDL_SCANCODE_W) == Held)
 	{
 		forwardSpeed += 300.f;
 	}
-	if (keystate[SDL_SCANCODE_S])
+	if (keystate.Keyboard.GetKeyState(SDL_SCANCODE_S) == Held)
 	{
 		forwardSpeed -= 300.f;
 	}
-	if (keystate[SDL_SCANCODE_A])
+	if (keystate.Keyboard.GetKeyState(SDL_SCANCODE_A) == Held)
 	{
 		angularSpeed -= Math::TwoPi;
 	}
-	if (keystate[SDL_SCANCODE_D])
+	if (keystate.Keyboard.GetKeyState(SDL_SCANCODE_D) == Held)
 	{
 		angularSpeed += Math::TwoPi;
 	}
+
+	if (keystate.Controller.GetButtonValue(SDL_CONTROLLER_BUTTON_A))
+		forwardSpeed += 300.f;
 
 	mMoveComp->SetForwardSpeed(forwardSpeed);
 	mMoveComp->SetAngularSpeed(angularSpeed);

@@ -95,13 +95,6 @@ bool Renderer::Initialize(float screenWidth, float screenHeight)
     mScreenWidth = screenWidth;
     mScreenHeight = screenHeight;
 
-    int sdlResult = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    if (sdlResult != 0)
-    {
-        SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
-        return false;
-    }
-
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);

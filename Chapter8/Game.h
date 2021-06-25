@@ -8,6 +8,7 @@ class Game
 {
 	class Renderer* mRenderer;
 	class AudioSystem* mAudioSystem;
+	class InputSystem* mInputSystem;
 	bool mIsRunning;
 
 	Uint32 mTickCount;

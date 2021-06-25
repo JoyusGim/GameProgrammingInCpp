@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "Game.h"
 #include "Component.h"
+#include "InputSystem.h"
 
 Actor::Actor(Game* game)	:
 	mGame{ game },
@@ -44,7 +45,7 @@ void Actor::UpdateComponents(float deltaTime)
 	}
 }
 
-void Actor::ProcessInput(const uint8_t* keyState)
+void Actor::ProcessInput(const InputState& keyState)
 {
 	if (mState == State::ACTIVE)
 	{
