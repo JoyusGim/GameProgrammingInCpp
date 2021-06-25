@@ -5,6 +5,8 @@
 Actor::Actor(Game* game)	:
 	mGame{ game },
 	mScale{ 1.f },
+	mPosition{ Vector3::Zero },
+	mRotation{ Quaternion::Identity },
 	mRecomputeWorldTransform{ true },
 	mState{ State::ACTIVE }
 {
@@ -58,16 +60,15 @@ void Actor::ComputeWorldTransform()
 {
 	if (mRecomputeWorldTransform)
 	{
+		mRecomputeWorldTransform = false;
 		mWorldTransform = Matrix4::CreateScale(mScale);
 		mWorldTransform *= Matrix4::CreateFromQuaternion(mRotation);
-		mWorldTransform *= Matrix4::CreateTranslation(Vector3(mPosition.x, mPosition.y, 0.f));
+		mWorldTransform *= Matrix4::CreateTranslation(mPosition);
 
 		for (auto comp : mComponents)
 		{
 			comp->OnUpdateWorldTransform();
 		}
-
-		mRecomputeWorldTransform = false;
 	}
 }
 

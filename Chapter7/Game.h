@@ -7,6 +7,7 @@
 class Game
 {
 	class Renderer* mRenderer;
+	class AudioSystem* mAudioSystem;
 	bool mIsRunning;
 
 	Uint32 mTickCount;
@@ -15,6 +16,7 @@ class Game
 	std::vector<class Actor*> mPendingActors;
 	bool mUpdatingActor;
 
+	class CameraActor* mCameraActor;
 	
 	void ProcessInput();
 	void UpdateGame();
@@ -34,5 +36,6 @@ public:
 	void RemoveActor(class Actor* actor);
 
 	class Renderer* GetRenderer() const;
+	class AudioSystem* GetAudioSystem() const;
 };
 

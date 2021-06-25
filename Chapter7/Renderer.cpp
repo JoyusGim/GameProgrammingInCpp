@@ -95,7 +95,7 @@ bool Renderer::Initialize(float screenWidth, float screenHeight)
     mScreenWidth = screenWidth;
     mScreenHeight = screenHeight;
 
-    int sdlResult = SDL_Init(SDL_INIT_VIDEO);
+    int sdlResult = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     if (sdlResult != 0)
     {
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -292,6 +292,11 @@ float Renderer::GetScreenWidth() const
 float Renderer::GetScreenHeight() const
 {
     return mScreenHeight;
+}
+
+void Renderer::SetViewMatrix(const Matrix4& view)
+{
+    mView = view;
 }
 
 void Renderer::SetAmbientLight(const Vector3& ambient)

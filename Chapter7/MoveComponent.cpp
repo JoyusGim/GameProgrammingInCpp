@@ -5,7 +5,8 @@
 MoveComponent::MoveComponent(Actor* actor, int updateOrder)	:
 	Component(actor, updateOrder),
 	mMass{ 0.f },
-	mAngularSpeed{ 0.f }
+	mAngularSpeed{ 0.f },
+	mForwardSpeed{ 0.f }
 {
 }
 
@@ -21,6 +22,13 @@ void MoveComponent::Update(float deltaTime)
 		mOwner->SetRotate(rot);
 	}
 
+	if (!Math::NearZero(mForwardSpeed))
+	{
+		Vector3 pos = mOwner->GetPosition();
+		pos += mOwner->GetForward() * mForwardSpeed * deltaTime;
+		mOwner->SetPosition(pos);
+	}
+	/*
 	// 질량이 0과 가까우면 계산을 피한다.
 	if (!Math::NearZero(mMass))
 	{
@@ -33,6 +41,7 @@ void MoveComponent::Update(float deltaTime)
 		mOwner->SetPosition(position);
 		mAccumForce = Vector3::Zero;
 	}
+	*/
 }
 
 float MoveComponent::GetAngularSpeed() const
@@ -43,6 +52,16 @@ float MoveComponent::GetAngularSpeed() const
 void MoveComponent::SetAngularSpeed(float speed)
 {
 	mAngularSpeed = speed;
+}
+
+float MoveComponent::GetForwardSpeed() const
+{
+	return mForwardSpeed;
+}
+
+void MoveComponent::SetForwardSpeed(float speed)
+{
+	mForwardSpeed = speed;
 }
 
 float MoveComponent::GetMass() const
