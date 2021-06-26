@@ -3,6 +3,7 @@
 #include <SDL_gamecontroller.h>
 #include <SDL_mouse.h>
 #include "Math.h"
+#include <unordered_map>
 
 enum ButtonState
 {
@@ -41,15 +42,29 @@ public:
 class ControllerState
 {
 	friend class InputSystem;
+	int mNumControllers;
+	std::unordered_map<int, SDL_GameController*> mControllers;
+	SDL_GameController* mCurrController;
 	Uint8 mCurrButtons[SDL_CONTROLLER_BUTTON_MAX];
 	Uint8 mPrevButtons[SDL_CONTROLLER_BUTTON_MAX];
-	bool mIsConnected;
+	float mLeftTrigger;
+	float mRightTrigger;
+	Vector2 mLeftStick;
+	Vector2 mRightStick;
 
+	bool mIsConnected;
+	
 public:
 	bool IsConnected() const;
 
 	bool GetButtonValue(SDL_GameControllerButton button) const;
 	ButtonState GetButtonState(SDL_GameControllerButton button) const;
+
+	float GetLeftTrigger() const;
+	float GetRightTrigger() const;
+
+	const Vector2& GetLeftStick() const;
+	const Vector2& GetRightStick() const;
 };
 
 struct InputState
@@ -61,8 +76,14 @@ struct InputState
 
 class InputSystem
 {
-	SDL_GameController* mController;
 	InputState mState;
+
+	float Filter1D(int input);
+	Vector2 Filter2D(int inputX, int inputY);
+
+	void LoadControllers();
+	void AddController(int id);
+	void RemoveController(int id);
 
 public:
 	bool Initialize();

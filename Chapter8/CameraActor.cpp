@@ -29,7 +29,9 @@ void CameraActor::ActorInput(const InputState& keystate)
 {
 	float forwardSpeed = 0.f;
 	float angularSpeed = 0.f;
-
+	Vector2 lS = keystate.Controller.GetLeftStick();
+	Vector2 rS = keystate.Controller.GetRightStick();
+		
 	if (keystate.Keyboard.GetKeyState(SDL_SCANCODE_W) == Held)
 	{
 		forwardSpeed += 300.f;
@@ -47,8 +49,8 @@ void CameraActor::ActorInput(const InputState& keystate)
 		angularSpeed += Math::TwoPi;
 	}
 
-	if (keystate.Controller.GetButtonValue(SDL_CONTROLLER_BUTTON_A))
-		forwardSpeed += 300.f;
+	forwardSpeed = 300.f * lS.y;
+	angularSpeed = Math::TwoPi * rS.x;
 
 	mMoveComp->SetForwardSpeed(forwardSpeed);
 	mMoveComp->SetAngularSpeed(angularSpeed);
