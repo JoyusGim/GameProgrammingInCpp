@@ -58,6 +58,33 @@ Vector3 Vector3::Transform(const Vector3& vec, const Matrix4& mat, float w /*= 1
 	return retVal;
 }
 
+Vector3 Vector3::TransformWithPerspDiv(const Vector3& vec, const Matrix4& mat, float w)
+{
+	Vector3 retVal;
+	retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] +
+		vec.z * mat.mat[2][0] + w * mat.mat[3][0];
+	retVal.y = vec.x * mat.mat[0][1] + vec.y * mat.mat[1][1] +
+		vec.z * mat.mat[2][1] + w * mat.mat[3][1];
+	retVal.z = vec.x * mat.mat[0][2] + vec.y * mat.mat[1][2] +
+		vec.z * mat.mat[2][2] + w * mat.mat[3][2];
+	float transformedW = vec.x * mat.mat[0][3] + vec.y * mat.mat[1][3] +
+		vec.z * mat.mat[2][3] + w * mat.mat[3][3];
+	if (!Math::NearZero(Math::Abs(transformedW)))
+	{
+		transformedW = 1.0f / transformedW;
+		retVal *= transformedW;
+	}
+	return retVal;
+}
+
+Vector3 Vector3::Transform(const Vector3& v, const Quaternion& q)
+{
+	Vector3 qv(q.x, q.y, q.z);
+	Vector3 retVal = v;
+	retVal += 2.f * Vector3::Cross(qv, Vector3::Cross(qv, v) + q.w * v);
+	return retVal;
+}
+
 void Matrix4::Invert()
 {
 	// Thanks slow math

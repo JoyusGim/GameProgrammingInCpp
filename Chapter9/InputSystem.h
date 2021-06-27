@@ -37,6 +37,7 @@ public:
 	bool GetButtonValue(int button) const;
 	ButtonState GetButtonState(int button) const;
 	const Vector2& GetScrollWheel() const;
+	const Vector2& GetMousePos() const;
 };
 
 class ControllerState

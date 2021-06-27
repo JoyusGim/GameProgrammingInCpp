@@ -12,6 +12,14 @@ MoveComponent::MoveComponent(Actor* actor, int updateOrder)	:
 
 void MoveComponent::Update(float deltaTime)
 {
+	if (!Math::NearZero(mForwardSpeed) || !Math::NearZero(mStrafeSpeed))
+	{
+		Vector3 pos = mOwner->GetPosition();
+		pos += mOwner->GetForward() * mForwardSpeed * deltaTime;
+		pos += mOwner->GetRight() * mStrafeSpeed * deltaTime;
+		mOwner->SetPosition(pos);
+	}
+	
 	if (!Math::NearZero(mAngularSpeed))
 	{
 		Quaternion rot = mOwner->GetRotate();
@@ -21,13 +29,14 @@ void MoveComponent::Update(float deltaTime)
 		rot = Quaternion::Concatenate(rot, inc);
 		mOwner->SetRotate(rot);
 	}
-
+	/*
 	if (!Math::NearZero(mForwardSpeed))
 	{
 		Vector3 pos = mOwner->GetPosition();
 		pos += mOwner->GetForward() * mForwardSpeed * deltaTime;
 		mOwner->SetPosition(pos);
 	}
+	*/
 	/*
 	// 질량이 0과 가까우면 계산을 피한다.
 	if (!Math::NearZero(mMass))
@@ -62,6 +71,16 @@ float MoveComponent::GetForwardSpeed() const
 void MoveComponent::SetForwardSpeed(float speed)
 {
 	mForwardSpeed = speed;
+}
+
+float MoveComponent::GetStrafeSpeed() const
+{
+	return mStrafeSpeed;
+}
+
+void MoveComponent::SetStrafeSpeed(float speed)
+{
+	mStrafeSpeed = speed;
 }
 
 float MoveComponent::GetMass() const

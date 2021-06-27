@@ -312,6 +312,9 @@ public:
 	}
 
 	static Vector3 Transform(const Vector3& vec, const class Matrix4& mat, float w = 1.f);
+	static Vector3 TransformWithPerspDiv(const Vector3& vec, const class Matrix4& mat, float w = 1.0f);
+
+	static Vector3 Transform(const Vector3& v, const class Quaternion& q);
 
 	static const Vector3 Zero;
 	static const Vector3 UnitX;

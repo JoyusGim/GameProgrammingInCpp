@@ -7,6 +7,7 @@ class MoveComponent : public Component
 	float mMass;
 	float mAngularSpeed;
 	float mForwardSpeed;
+	float mStrafeSpeed;
 	Vector3 mVelocity;
 	Vector3 mAccumForce;
 
@@ -19,6 +20,8 @@ public:
 	void SetAngularSpeed(float speed);
 	float GetForwardSpeed() const;
 	void SetForwardSpeed(float speed);
+	float GetStrafeSpeed() const;
+	void SetStrafeSpeed(float speed);
 	float GetMass() const;
 	void SetMass(float mass);
 

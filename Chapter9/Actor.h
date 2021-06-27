@@ -49,5 +49,6 @@ public:
 	void SetState(State state);
 	State GetState() const;
 	Vector3 GetForward() const;
+	Vector3 GetRight() const;
 	class Game* GetGame() const;
 };

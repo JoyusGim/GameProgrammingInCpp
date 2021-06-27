@@ -66,5 +66,8 @@ public:
 
 	void SetAmbientLight(const Vector3& ambient);
 	DirectionalLight& GetDirectionalLight();
+
+	Vector3 Unproject(const Vector3& screenPoint) const;
+	void GetScreenDirection(Vector3& outStart, Vector3& outDir) const;
 };
 

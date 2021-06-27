@@ -17,7 +17,7 @@ class Game
 	std::vector<class Actor*> mPendingActors;
 	bool mUpdatingActor;
 
-	class CameraActor* mCameraActor;
+	class FPSActor* mFPSActor;
 	
 	void ProcessInput();
 	void UpdateGame();

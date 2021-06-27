@@ -273,6 +273,11 @@ const Vector2& MouseState::GetScrollWheel() const
     return mScrollWheel;
 }
 
+const Vector2& MouseState::GetMousePos() const
+{
+    return mMousePos;
+}
+
 bool ControllerState::IsConnected() const
 {
     return mIsConnected;

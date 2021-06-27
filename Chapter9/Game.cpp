@@ -7,7 +7,10 @@
 #include "MeshComponent.h"
 #include "Mesh.h"
 #include "Texture.h"
-#include "CameraActor.h"
+#include "FPSActor.h"
+#include "FollowActor.h"
+#include "OrbitActor.h"
+#include "SplineActor.h"
 #include "PlaneActor.h"
 #include "AudioComponent.h"
 
@@ -30,6 +33,14 @@ void Game::ProcessInput()
         case SDL_CONTROLLERDEVICEREMOVED:
             mInputSystem->ProcessEvent(event);
             break;
+        /*
+        case SDL_MOUSEBUTTONDOWN:
+            mInputSystem->SetRelativeMouseMode(true);
+            break;
+        case SDL_MOUSEBUTTONUP:
+            mInputSystem->SetRelativeMouseMode(false);
+            break;
+        */   
         default:
             break;
         }
@@ -158,20 +169,17 @@ void Game::LoadData()
     dir.mDiffuseColor = Vector3(0.78f, 0.88f, 1.0f);
     dir.mSpecColor = Vector3(0.8f, 0.8f, 0.8f);
     
-    // Camera actor
-    mCameraActor = new CameraActor(this);
+    // FPS actor
+    mFPSActor = new FPSActor(this);
+    //new FollowActor(this);
+    //new OrbitActor(this);
+    //new SplineActor(this);
 
     // UI elements
     a = new Actor(this);
     a->SetPosition(Vector3(-350.0f, -350.0f, 0.0f));
     SpriteComponent* sc = new SpriteComponent(a);
     sc->SetTexture(mRenderer->GetTexture("Assets/HealthBar.png"));
-
-    a = new Actor(this);
-    a->SetPosition(Vector3(375.0f, -275.0f, 0.0f));
-    a->SetScale(0.75f);
-    sc = new SpriteComponent(a);
-    sc->SetTexture(mRenderer->GetTexture("Assets/Radar.png"));
 
     a = new Actor(this);
     a->SetPosition(Vector3(500.f, -75.f, 0.f));
@@ -200,7 +208,7 @@ Game::Game()    :
     mIsRunning{ true },
     mTickCount{ 0 },
     mUpdatingActor{ false },
-    mCameraActor{ nullptr },
+    mFPSActor{ nullptr },
     mInputSystem{ nullptr }
 {
 }
@@ -226,6 +234,7 @@ bool Game::Initialize()
     mInputSystem = new InputSystem();
     if (!mInputSystem->Initialize())
         return false;
+    mInputSystem->SetRelativeMouseMode(true);
 
     LoadData();
 

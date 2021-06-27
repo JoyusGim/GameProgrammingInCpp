@@ -155,6 +155,11 @@ Vector3 Actor::GetForward() const
 	return Vector3::Transform(Vector3::UnitX, Matrix4::CreateFromQuaternion(mRotation));
 }
 
+Vector3 Actor::GetRight() const
+{
+	return Vector3::Transform(Vector3::UnitY, mRotation);
+}
+
 class Game* Actor::GetGame() const
 {
 	return mGame;

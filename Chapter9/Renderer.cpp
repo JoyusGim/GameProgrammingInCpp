@@ -109,7 +109,7 @@ bool Renderer::Initialize(float screenWidth, float screenHeight)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     mWindow = SDL_CreateWindow(
-        "Game Programming in C++ Chapter 8",
+        "Game Programming in C++ Chapter 9",
         100, 100,
         static_cast<int>(mScreenWidth), static_cast<int>(mScreenHeight),
         SDL_WINDOW_OPENGL
@@ -300,4 +300,28 @@ void Renderer::SetAmbientLight(const Vector3& ambient)
 DirectionalLight& Renderer::GetDirectionalLight()
 {
     return mDirLight;
+}
+
+Vector3 Renderer::Unproject(const Vector3& screenPoint) const
+{
+    // 화면 좌표를 장치 좌표로 변환 [-1, 1]범위
+    Vector3 deviceCoord = screenPoint;
+    deviceCoord.x /= mScreenWidth * 0.5f;
+    deviceCoord.y /= mScreenHeight * 0.5f;
+
+    // 벡터를 언프로젝션 행렬로 변환
+    Matrix4 unprojection = mView * mProjection;
+    unprojection.Invert();
+    return Vector3::TransformWithPerspDiv(deviceCoord, unprojection);
+}
+
+void Renderer::GetScreenDirection(Vector3& outStart, Vector3& outDir) const
+{
+    Vector3 screenPoint(0.f, 0.f, 0.f);
+    outStart = Unproject(screenPoint);
+    screenPoint.z = 0.9f;
+    Vector3 end = Unproject(screenPoint);
+
+    outDir = end - outStart;
+    outDir.Normalize();
 }
