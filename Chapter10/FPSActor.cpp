@@ -4,13 +4,11 @@
 #include "AudioComponent.h"
 #include "FPSCamera.h"
 #include "MeshComponent.h"
+#include "BoxComponent.h"
 #include "Game.h"
 #include "Renderer.h"
-
-static Actor* bullet;
-static float lifeTime = 1.f;
-static MoveComponent* mc;
-
+#include "PlaneActor.h"
+#include "BallActor.h"
 
 FPSActor::FPSActor(Game* game)	:
 	Actor(game)
@@ -29,8 +27,10 @@ FPSActor::FPSActor(Game* game)	:
 	mMeshComp = new MeshComponent(mModelActor);
 	mMeshComp->SetMesh(game->GetRenderer()->GetMesh("Assets/Rifle.gpmesh"));
 
-	bullet = nullptr;
-	lifeTime = 1.f;
+	mBoxComp = new BoxComponent(this);
+	AABB myBox(Vector3(-25.f, -25.f, -87.5f), Vector3(25.f, 25.f, 87.5f));
+	mBoxComp->SetObjectBox(myBox);
+	mBoxComp->SetShouldRotate(false);
 }
 
 void FPSActor::ActorInput(const InputState& keyState)
@@ -81,40 +81,19 @@ void FPSActor::ActorInput(const InputState& keyState)
 	mCameraComp->SetPitchSpeed(pitchSpeed);
 
 	if (keyState.Mouse.GetButtonState(SDL_BUTTON_LEFT) == Pressed)
-	{
-		if (!bullet)
-		{
-			bullet = new Actor(GetGame());
-			bullet->SetPosition(
-				mModelActor->GetPosition() +
-				mModelActor->GetForward() * 70.f
-			);
-			bullet->SetScale(0.3f);
-
-			Vector3 screenPoint = Vector3::Zero;
-			Vector3 dir = Vector3::Zero;
-			GetGame()->GetRenderer()->GetScreenDirection(screenPoint, dir);
-			
-			Vector3 up = Vector3::Cross(bullet->GetForward(), dir);
-			up.Normalize();
-
-			float rotate = Math::Acos(Vector3::Dot(dir, bullet->GetForward()));
-			bullet->SetRotate(Quaternion(up, rotate));
-
-			auto mesh = new MeshComponent(bullet);
-			mesh->SetMesh(GetGame()->GetRenderer()->GetMesh("Assets/Sphere.gpmesh"));
-
-			mc = new MoveComponent(bullet);
-		}		
-	}
+		Shoot();
 }
 
 void FPSActor::UpdateActor(float deltaTime)
 {
 	Actor::UpdateActor(deltaTime);
 
+	FixCollisions();
+
 	mLastFootstep -= deltaTime;
-	if (!Math::NearZero(mMoveComp->GetForwardSpeed()) && mLastFootstep <= 0.f)
+	if ((!Math::NearZero(mMoveComp->GetForwardSpeed()) || 
+		!Math::NearZero(mMoveComp->GetStrafeSpeed())) &&
+		mLastFootstep <= 0.f)
 	{
 		mFootstep.SetPaused(false);
 		mFootstep.Restart();
@@ -134,19 +113,57 @@ void FPSActor::UpdateActor(float deltaTime)
 		Quaternion(GetRight(), mCameraComp->GetPitch()));
 	mModelActor->SetRotate(q);
 
+}
 
-	if (bullet)
+void FPSActor::FixCollisions()
+{
+	ComputeWorldTransform();
+
+	const AABB& playerBox = mBoxComp->GetWorldBox();
+	Vector3 pos = GetPosition();
+
+	auto& planes = GetGame()->GetPlanes();
+	for (auto pa : planes)
 	{
-		lifeTime -= deltaTime;
-		if (lifeTime < 0.f)
+		const AABB& planeBox = pa->GetBox()->GetWorldBox();
+		if (Intersect(playerBox, planeBox))
 		{
-			delete bullet;
-			bullet = nullptr;
-			lifeTime = 1.f;
-		}
-		else
-		{
-			mc->SetForwardSpeed(700.f);
+			float dx1 = planeBox.mMax.x - playerBox.mMin.x;
+			float dx2 = planeBox.mMin.x - playerBox.mMax.x;
+			float dy1 = planeBox.mMax.y - playerBox.mMin.y;
+			float dy2 = planeBox.mMin.y - playerBox.mMax.y;
+			float dz1 = planeBox.mMax.z - playerBox.mMin.z;
+			float dz2 = planeBox.mMin.z - playerBox.mMax.z;
+
+			float dx = (Math::Abs(dx1) < Math::Abs(dx2)) ? dx1 : dx2;
+			float dy = (Math::Abs(dy1) < Math::Abs(dy2)) ? dy1 : dy2;
+			float dz = (Math::Abs(dz1) < Math::Abs(dz2)) ? dz1 : dz2;
+
+			if (Math::Abs(dx) <= Math::Abs(dy) && Math::Abs(dx) <= Math::Abs(dz))
+				pos.x += dx;
+			else if (Math::Abs(dy) <= Math::Abs(dx) && Math::Abs(dy) <= Math::Abs(dz))
+				pos.y += dy;
+			else
+				pos.z += dz;
+
+			SetPosition(pos);
+			mBoxComp->OnUpdateWorldTransform();
 		}
 	}
+}
+
+void FPSActor::Shoot()
+{
+	Vector3 screenPoint(0.f, 0.f, 0.f);
+	Vector3 start = GetGame()->GetRenderer()->Unproject(screenPoint);
+	screenPoint.z = 0.9f;
+	Vector3 end = GetGame()->GetRenderer()->Unproject(screenPoint);
+	Vector3 dir = end - start;
+	dir.Normalize();
+
+	BallActor* ball = new BallActor(GetGame());
+	ball->SetPlayer(this);
+	ball->SetPosition(start + dir * 20.f);
+	ball->RotateToNewForward(dir);
+	mAudioComp->PlayEvent("event:/Shot");
 }

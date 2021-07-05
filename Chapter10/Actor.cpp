@@ -164,3 +164,20 @@ class Game* Actor::GetGame() const
 {
 	return mGame;
 }
+
+void Actor::RotateToNewForward(const Vector3& forward)
+{
+	float dot = Vector3::Dot(Vector3::UnitX, forward);
+	float angle = Math::Acos(dot);
+
+	if (dot > 0.9999f)
+		SetRotate(Quaternion::Identity);
+	else if (dot < -0.9999f)
+		SetRotate(Quaternion(Vector3::UnitZ, Math::Pi));
+	else
+	{
+		Vector3 axis = Vector3::Cross(Vector3::UnitX, forward);
+		axis.Normalize();
+		SetRotate(Quaternion(axis, angle));
+	}
+}

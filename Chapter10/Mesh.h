@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "Collision.h"
 
 class Mesh
 {
@@ -9,6 +10,7 @@ class Mesh
 	std::string mShaderName;
 	float mRadius;
 	float mSpecPower;
+	AABB mBox;
 
 public:
 	Mesh();
@@ -22,5 +24,6 @@ public:
 	const std::string& GetShaderName() const;
 	float GetRadius() const;
 	float GetSpecPower() const;
+	const AABB& GetBox() const;
 };
 

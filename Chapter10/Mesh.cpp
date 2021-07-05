@@ -11,7 +11,8 @@
 Mesh::Mesh()    :
     mVertexArray{ nullptr },
     mRadius{ 0.f },
-    mSpecPower{ 0.f }
+    mSpecPower{ 0.f },
+    mBox{Vector3::Infinity, Vector3::NegInfinity}
 {
 }
 
@@ -113,6 +114,7 @@ bool Mesh::Load(const std::string& fileName, Game* game)
 
         Vector3 pos(vert[0].GetDouble(), vert[1].GetDouble(), vert[2].GetDouble());
         mRadius = Math::Max(mRadius, pos.SquareLength());
+        mBox.UpdateMinMax(pos);
 
         for (rapidjson::SizeType i = 0; i < vert.Size(); i++)
         {
@@ -189,4 +191,9 @@ float Mesh::GetRadius() const
 float Mesh::GetSpecPower() const
 {
     return mSpecPower;
+}
+
+const AABB& Mesh::GetBox() const
+{
+    return mBox;
 }

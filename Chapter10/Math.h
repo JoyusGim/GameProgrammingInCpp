@@ -301,6 +301,11 @@ public:
 		return temp;
 	}
 
+	static Vector3 Reflect(const Vector3& v, const Vector3& n)
+	{
+		return v - 2.f * Vector3::Dot(v, n) * n;
+	}
+
 	float SquareLength() const
 	{
 		return x * x + y * y + z * z;

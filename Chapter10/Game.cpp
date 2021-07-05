@@ -1,18 +1,18 @@
 #include "Game.h"
+#include <algorithm>
 #include "Actor.h"
 #include "Renderer.h"
 #include "AudioSystem.h"
 #include "InputSystem.h"
 #include "SpriteComponent.h"
 #include "MeshComponent.h"
-#include "Mesh.h"
-#include "Texture.h"
 #include "FPSActor.h"
-#include "FollowActor.h"
-#include "OrbitActor.h"
-#include "SplineActor.h"
 #include "PlaneActor.h"
-#include "AudioComponent.h"
+#include "PhysWorld.h"
+#include "BallActor.h"
+#include "TargetActor.h"
+#include "Texture.h"
+
 
 void Game::ProcessInput()
 {
@@ -109,21 +109,11 @@ void Game::GenerateOutput()
 
 void Game::LoadData()
 {
-    Actor* a = new Actor(this);
-    a->SetPosition(Vector3(200.0f, 75.0f, 0.0f));
-    a->SetScale(100.0f);
-    Quaternion q(Vector3::UnitY, -Math::PiOver2);
-    q = Quaternion::Concatenate(q, Quaternion(Vector3::UnitZ, Math::Pi + Math::Pi / 4.0f));
-    a->SetRotate(q);
-    MeshComponent* mc = new MeshComponent(a);
-    mc->SetMesh(mRenderer->GetMesh("Assets/Cube.gpmesh"));
+    // Create actors
+    Actor* a = nullptr;
+    Quaternion q;
+    //MeshComponent* mc = nullptr;
 
-    a = new Actor(this);
-    a->SetPosition(Vector3(200.0f, -75.0f, 0.0f));
-    a->SetScale(3.0f);
-    mc = new MeshComponent(a);
-    mc->SetMesh(mRenderer->GetMesh("Assets/Sphere.gpmesh"));
-    
     // Setup floor
     const float start = -1250.0f;
     const float size = 250.0f;
@@ -161,19 +151,13 @@ void Game::LoadData()
         a->SetPosition(Vector3(-start + size, start + i * size, 0.0f));
         a->SetRotate(q);
     }
-
+    
     // Setup lights
     mRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
     DirectionalLight& dir = mRenderer->GetDirectionalLight();
     dir.mDirection = Vector3(0.0f, -0.707f, -0.707f);
     dir.mDiffuseColor = Vector3(0.78f, 0.88f, 1.0f);
     dir.mSpecColor = Vector3(0.8f, 0.8f, 0.8f);
-    
-    // FPS actor
-    mFPSActor = new FPSActor(this);
-    //new FollowActor(this);
-    //new OrbitActor(this);
-    //new SplineActor(this);
 
     // UI elements
     a = new Actor(this);
@@ -182,14 +166,29 @@ void Game::LoadData()
     sc->SetTexture(mRenderer->GetTexture("Assets/HealthBar.png"));
 
     a = new Actor(this);
-    a->SetPosition(Vector3(500.f, -75.f, 0.f));
-    a->SetScale(1.f);
-    mc = new MeshComponent(a);
-    mc->SetMesh(mRenderer->GetMesh("Assets/Sphere.gpmesh"));
-    AudioComponent* ac = new AudioComponent(a);
-    ac->PlayEvent("event:/FireLoop");
+    a->SetPosition(Vector3(-390.0f, 275.0f, 0.0f));
+    a->SetScale(0.75f);
+    sc = new SpriteComponent(a);
+    sc->SetTexture(mRenderer->GetTexture("Assets/Radar.png"));
 
-    //mAudioSystem->PlayEvent("event:/Music");
+
+    // Enable relative mouse mode for camera look
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+    // Make an initial call to get relative to clear out
+    SDL_GetRelativeMouseState(nullptr, nullptr);
+
+    // Different camera actors
+    mFPSActor = new FPSActor(this);
+
+    // Create target actors
+    a = new TargetActor(this);
+    a->SetPosition(Vector3(1450.0f, 0.0f, 100.0f));
+    a = new TargetActor(this);
+    a->SetPosition(Vector3(1450.0f, 0.0f, 400.0f));
+    a = new TargetActor(this);
+    a->SetPosition(Vector3(1450.0f, -500.0f, 200.0f));
+    a = new TargetActor(this);
+    a->SetPosition(Vector3(1450.0f, 500.0f, 200.0f));
 }
 
 void Game::UnloadData()
@@ -209,7 +208,8 @@ Game::Game()    :
     mTickCount{ 0 },
     mUpdatingActor{ false },
     mFPSActor{ nullptr },
-    mInputSystem{ nullptr }
+    mInputSystem{ nullptr },
+    mPhysWorld{ nullptr }
 {
 }
 
@@ -236,6 +236,9 @@ bool Game::Initialize()
         return false;
     mInputSystem->SetRelativeMouseMode(true);
 
+    mPhysWorld = new PhysWorld(this);
+    
+
     LoadData();
 
     mTickCount = SDL_GetTicks();
@@ -256,6 +259,7 @@ void Game::RunLoop()
 void Game::Shutdown()
 {
     UnloadData();
+    delete mPhysWorld;
     mRenderer->Shutdown();
     mAudioSystem->Shutdown();
 }
@@ -290,6 +294,11 @@ void Game::RemoveActor(Actor* actor)
     }
 }
 
+void Game::AddPlane(PlaneActor* plane)
+{
+    mPlanes.emplace_back(plane);
+}
+
 Renderer* Game::GetRenderer() const
 {
     return mRenderer;
@@ -298,4 +307,14 @@ Renderer* Game::GetRenderer() const
 AudioSystem* Game::GetAudioSystem() const
 {
     return mAudioSystem;
+}
+
+PhysWorld* Game::GetPhysWorld() const
+{
+    return mPhysWorld;
+}
+
+std::vector<class PlaneActor*>& Game::GetPlanes()
+{
+    return mPlanes;
 }

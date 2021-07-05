@@ -3,7 +3,11 @@
 class PlaneActor :
     public Actor
 {
+    class BoxComponent* mBox;
+
 public:
     PlaneActor(class Game* game);
+
+    class BoxComponent* GetBox() const { return mBox; }
 };
 

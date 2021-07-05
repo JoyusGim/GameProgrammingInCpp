@@ -51,4 +51,6 @@ public:
 	Vector3 GetForward() const;
 	Vector3 GetRight() const;
 	class Game* GetGame() const;
+
+	void RotateToNewForward(const Vector3& forward);
 };
