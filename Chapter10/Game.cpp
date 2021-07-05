@@ -13,7 +13,6 @@
 #include "TargetActor.h"
 #include "Texture.h"
 
-
 void Game::ProcessInput()
 {
     mInputSystem->PrepareForUpdate();
@@ -238,7 +237,6 @@ bool Game::Initialize()
 
     mPhysWorld = new PhysWorld(this);
     
-
     LoadData();
 
     mTickCount = SDL_GetTicks();
@@ -259,9 +257,29 @@ void Game::RunLoop()
 void Game::Shutdown()
 {
     UnloadData();
-    delete mPhysWorld;
-    mRenderer->Shutdown();
-    mAudioSystem->Shutdown();
+    if (mPhysWorld)
+    {
+        delete mPhysWorld;
+        mRenderer->Shutdown();
+    }
+    if (mRenderer)
+    {
+        delete mRenderer;
+        mAudioSystem->Shutdown();
+    }
+    if (mAudioSystem)
+    {
+        mAudioSystem->Shutdown();
+        delete mAudioSystem;
+    }
+    if (mInputSystem)
+    {
+        mInputSystem->Shutdown();
+        delete mInputSystem;
+    }
+
+
+    SDL_Quit();
 }
 
 void Game::AddActor(Actor* actor)
