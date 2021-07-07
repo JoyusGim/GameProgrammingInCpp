@@ -16,5 +16,7 @@ public:
 	virtual void OnUpdateWorldTransform() {}
 
 	int GetUpdateOrder() const;
+
+	class Actor* GetOwner() const;
 };
 

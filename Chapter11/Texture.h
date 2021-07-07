@@ -17,5 +17,7 @@ public:
 	void SetActive();
 	int GetWidth() const;
 	int GetHeight() const;
+
+	void CreateFromSurface(struct SDL_Surface* surface);
 };
 

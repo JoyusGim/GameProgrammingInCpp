@@ -6,6 +6,8 @@
 #include "SpriteComponent.h"
 #include "MeshComponent.h"
 #include <glew.h>
+#include "Game.h"
+#include "UIScreen.h"
 
 bool Renderer::LoadShaders()
 {
@@ -109,7 +111,7 @@ bool Renderer::Initialize(float screenWidth, float screenHeight)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     mWindow = SDL_CreateWindow(
-        "Game Programming in C++ Chapter 10",
+        "Game Programming in C++ Chapter 11",
         100, 100,
         static_cast<int>(mScreenWidth), static_cast<int>(mScreenHeight),
         SDL_WINDOW_OPENGL
@@ -200,6 +202,11 @@ void Renderer::Draw()
         sprite->Draw(mSpriteShader);
     }
 
+    for (auto ui : mGame->GetUIStack())
+    {
+        ui->Draw(mSpriteShader);
+    }
+
     SDL_GL_SwapWindow(mWindow);
 }
 
@@ -269,7 +276,10 @@ Mesh* Renderer::GetMesh(const std::string& fileName)
     {
         mesh = new Mesh();
         if (!mesh->Load(fileName, mGame))
+        {
+            delete mesh;
             return nullptr;
+        }
 
         mMeshes.emplace(fileName.c_str(), mesh);
     }

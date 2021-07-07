@@ -1,5 +1,9 @@
 #include "Game.h"
 #include <algorithm>
+#include <fstream>
+#include <sstream>
+#include <rapidjson\document.h>
+#include <rapidjson\stream.h>
 #include "Actor.h"
 #include "Renderer.h"
 #include "AudioSystem.h"
@@ -12,6 +16,10 @@
 #include "BallActor.h"
 #include "TargetActor.h"
 #include "Texture.h"
+#include "Font.h"
+#include "UIScreen.h"
+#include "HUD.h"
+#include "PauseMenu.h"
 
 void Game::ProcessInput()
 {
@@ -47,17 +55,25 @@ void Game::ProcessInput()
     
     mInputSystem->Update();
     const InputState& state = mInputSystem->GetState();
-    if (state.Keyboard.GetKeyState(SDL_SCANCODE_ESCAPE) == Released)
-    {
-        mIsRunning = false;
-    }
 
-    mUpdatingActor = true;
-    for (auto actor : mActors)
+    if (mGameState == GamePlay)
     {
-        actor->ProcessInput(state);
+        mUpdatingActor = true;
+        for (auto actor : mActors)
+        {
+            actor->ProcessInput(state);
+        }
+        mUpdatingActor = false;
+
+        if (state.Keyboard.GetKeyState(SDL_SCANCODE_ESCAPE) == Pressed)
+        {
+            new PauseMenu(this);
+        }
     }
-    mUpdatingActor = false;
+    else if (mGameState == GamePause)
+    {
+        mUIStack.back()->ProcessInput(state);
+    }
 }
 
 void Game::UpdateGame()
@@ -70,34 +86,59 @@ void Game::UpdateGame()
     if (deltaTime > 0.05f)
         deltaTime = 0.05f;
 
-    mAudioSystem->Update(deltaTime);
-
-    mUpdatingActor = true;
-    for (auto actor : mActors)
+    if (mGameState == GamePlay)
     {
-        actor->Update(deltaTime);
-    }
-    mUpdatingActor = false;
-
-    for (auto pending : mPendingActors)
-    {
-        pending->ComputeWorldTransform();
-        mActors.emplace_back(pending);
-    }
-    mPendingActors.clear();
-
-    std::vector<Actor*> deadActors;
-    for (auto actor : mActors)
-    {
-        if (actor->GetState() == Actor::State::DEAD)
+        mUpdatingActor = true;
+        for (auto actor : mActors)
         {
-            deadActors.emplace_back(actor);
+            actor->Update(deltaTime);
+        }
+        mUpdatingActor = false;
+
+        for (auto pending : mPendingActors)
+        {
+            pending->ComputeWorldTransform();
+            mActors.emplace_back(pending);
+        }
+        mPendingActors.clear();
+
+        std::vector<Actor*> deadActors;
+        for (auto actor : mActors)
+        {
+            if (actor->GetState() == Actor::State::DEAD)
+            {
+                deadActors.emplace_back(actor);
+            }
+        }
+
+        for (auto actor : deadActors)
+        {
+            delete actor;
         }
     }
 
-    for (auto actor : deadActors)
+    mAudioSystem->Update(deltaTime);
+
+    for(auto ui : mUIStack)
     {
-        delete actor;
+        if (ui->GetState() == UIScreen::Active)
+        {
+            ui->Update(deltaTime);
+        }
+    }
+
+    auto iter = mUIStack.begin();
+    while (iter != mUIStack.end())
+    {
+        if ((*iter)->GetState() == UIScreen::Closing)
+        {
+            delete *iter;
+            iter = mUIStack.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
     }
 }
 
@@ -124,7 +165,7 @@ void Game::LoadData()
             a->SetPosition(Vector3(start + i * size, start + j * size, -100.0f));
         }
     }
-    
+
     // Left/right walls
     q = Quaternion(Vector3::UnitX, Math::PiOver2);
     for (int i = 0; i < 10; i++)
@@ -150,7 +191,7 @@ void Game::LoadData()
         a->SetPosition(Vector3(-start + size, start + i * size, 0.0f));
         a->SetRotate(q);
     }
-    
+
     // Setup lights
     mRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
     DirectionalLight& dir = mRenderer->GetDirectionalLight();
@@ -158,26 +199,10 @@ void Game::LoadData()
     dir.mDiffuseColor = Vector3(0.78f, 0.88f, 1.0f);
     dir.mSpecColor = Vector3(0.8f, 0.8f, 0.8f);
 
-    // UI elements
-    a = new Actor(this);
-    a->SetPosition(Vector3(-350.0f, -350.0f, 0.0f));
-    SpriteComponent* sc = new SpriteComponent(a);
-    sc->SetTexture(mRenderer->GetTexture("Assets/HealthBar.png"));
-
-    a = new Actor(this);
-    a->SetPosition(Vector3(-390.0f, 275.0f, 0.0f));
-    a->SetScale(0.75f);
-    sc = new SpriteComponent(a);
-    sc->SetTexture(mRenderer->GetTexture("Assets/Radar.png"));
-
-
-    // Enable relative mouse mode for camera look
-    SDL_SetRelativeMouseMode(SDL_TRUE);
-    // Make an initial call to get relative to clear out
-    SDL_GetRelativeMouseState(nullptr, nullptr);
-
     // Different camera actors
     mFPSActor = new FPSActor(this);
+
+    mHUD = new HUD(this);
 
     // Create target actors
     a = new TargetActor(this);
@@ -188,6 +213,14 @@ void Game::LoadData()
     a->SetPosition(Vector3(1450.0f, -500.0f, 200.0f));
     a = new TargetActor(this);
     a->SetPosition(Vector3(1450.0f, 500.0f, 200.0f));
+    a = new TargetActor(this);
+    a->SetPosition(Vector3(0.0f, -1450.0f, 200.0f));
+    a->SetRotate(Quaternion(Vector3::UnitZ, Math::PiOver2));
+    a = new TargetActor(this);
+    a->SetPosition(Vector3(0.0f, 1450.0f, 200.0f));
+    a->SetRotate(Quaternion(Vector3::UnitZ, -Math::PiOver2));
+
+    LoadText("Assets/Russian.gptext");
 }
 
 void Game::UnloadData()
@@ -197,7 +230,24 @@ void Game::UnloadData()
         delete mActors.back();
     }
 
-    mRenderer->UnloadData();
+    while (!mUIStack.empty())
+    {
+        delete mUIStack.back();
+        mUIStack.pop_back();
+    }
+
+    auto iter = mFonts.begin();
+    while (iter != mFonts.end())
+    {
+        iter->second->Unload();
+        delete iter->second;
+        iter = mFonts.erase(iter);
+    }
+
+    if (mRenderer)
+    {
+        mRenderer->UnloadData();
+    }
 }
 
 Game::Game()    :
@@ -208,7 +258,8 @@ Game::Game()    :
     mUpdatingActor{ false },
     mFPSActor{ nullptr },
     mInputSystem{ nullptr },
-    mPhysWorld{ nullptr }
+    mPhysWorld{ nullptr },
+    mGameState{ GamePause }
 {
 }
 
@@ -219,6 +270,13 @@ bool Game::Initialize()
     if (sdlResult != 0)
     {
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+        return false;
+    }
+
+    int ttfResult = TTF_Init();
+    if (ttfResult != 0)
+    {
+        SDL_Log("Unable to initialize SDL_TTF: %s", TTF_GetError());
         return false;
     }
 
@@ -241,12 +299,13 @@ bool Game::Initialize()
 
     mTickCount = SDL_GetTicks();
 
+    mGameState = GameState::GamePlay;
     return true;
 }
 
 void Game::RunLoop()
 {
-    while (mIsRunning)
+    while (mGameState != GameExit)
     {
         ProcessInput();
         UpdateGame();
@@ -260,12 +319,11 @@ void Game::Shutdown()
     if (mPhysWorld)
     {
         delete mPhysWorld;
-        mRenderer->Shutdown();
     }
     if (mRenderer)
     {
+        mRenderer->Shutdown();
         delete mRenderer;
-        mAudioSystem->Shutdown();
     }
     if (mAudioSystem)
     {
@@ -278,7 +336,7 @@ void Game::Shutdown()
         delete mInputSystem;
     }
 
-
+    TTF_Quit();
     SDL_Quit();
 }
 
@@ -317,9 +375,53 @@ void Game::AddPlane(PlaneActor* plane)
     mPlanes.emplace_back(plane);
 }
 
+void Game::LoadText(const std::string& fileName)
+{
+    mTextMap.clear();
+    std::ifstream ifs(fileName);
+    if (!ifs.is_open())
+    {
+        SDL_Log("Text file %s not found", fileName.c_str());
+        return;
+    }
+
+    std::stringstream fileStream;
+    fileStream << ifs.rdbuf();
+    std::string contents = fileStream.str();
+
+    rapidjson::StringStream jsonStr(contents.c_str());
+    rapidjson::Document doc;
+    doc.ParseStream(jsonStr);
+    if (!doc.IsObject())
+    {
+        SDL_Log("Text file %s is not valid JSON", fileName.c_str());
+        return;
+    }
+
+    const rapidjson::Value& actions = doc["TextMap"];
+    for (rapidjson::Value::ConstMemberIterator iter = actions.MemberBegin();
+        iter != actions.MemberEnd(); ++iter)
+    {
+        if (iter->name.IsString() && iter->value.IsString())
+        {
+            mTextMap.emplace(iter->name.GetString(), iter->value.GetString());
+        }
+    }
+}
+
+FPSActor* Game::GetPlayer() const
+{
+    return mFPSActor;
+}
+
 Renderer* Game::GetRenderer() const
 {
     return mRenderer;
+}
+
+InputSystem* Game::GetInputSystem() const
+{
+    return mInputSystem;
 }
 
 AudioSystem* Game::GetAudioSystem() const
@@ -335,4 +437,66 @@ PhysWorld* Game::GetPhysWorld() const
 std::vector<class PlaneActor*>& Game::GetPlanes()
 {
     return mPlanes;
+}
+
+void Game::PushUI(UIScreen* screen)
+{
+    mUIStack.push_back(screen);
+}
+
+std::vector<class UIScreen*>& Game::GetUIStack()
+{
+    return mUIStack;
+}
+
+Font* Game::GetFont(const std::string& fileName)
+{
+    Font* font = nullptr;
+    auto iter = mFonts.find(fileName);
+    if (iter != mFonts.end())
+    {
+        font = iter->second;
+    }
+    else
+    {
+        font = new Font(this);
+        if (!font->Load(fileName))
+        {
+            delete font;
+            return nullptr;
+        }
+        mFonts.emplace(fileName, font);
+    }
+
+    return font;
+}
+
+void Game::SetGameState(const GameState& state)
+{
+    mGameState = state;
+}
+
+Game::GameState Game::GetGameState() const
+{
+    return mGameState;
+}
+
+HUD* Game::GetHUD() const
+{
+    return mHUD;
+}
+
+const std::string& Game::GetText(const std::string& key)
+{
+    static std::string errorMsg("**KEY NOT FOUND**");
+
+    auto iter = mTextMap.find(key);
+    if (iter != mTextMap.end())
+    {
+        return iter->second;
+    }
+    else
+    {
+        return errorMsg;
+    }
 }
