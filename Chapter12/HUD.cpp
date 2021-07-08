@@ -7,7 +7,7 @@
 #include "TargetComponent.h"
 #include "Component.h"
 #include "Actor.h"
-#include "FPSActor.h"
+#include "FollowActor.h"
 
 void HUD::UpdateCrossHair(float deltaTime)
 {

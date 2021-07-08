@@ -301,6 +301,11 @@ public:
 		return temp;
 	}
 
+	static Vector3 Lerp(const Vector3& a, const Vector3& b, float f)
+	{
+		return Vector3(a + f * (b - a));
+	}
+
 	static Vector3 Reflect(const Vector3& v, const Vector3& n)
 	{
 		return v - 2.f * Vector3::Dot(v, n) * n;

@@ -10,7 +10,7 @@
 #include "InputSystem.h"
 #include "SpriteComponent.h"
 #include "MeshComponent.h"
-#include "FPSActor.h"
+#include "FollowActor.h"
 #include "PlaneActor.h"
 #include "PhysWorld.h"
 #include "BallActor.h"
@@ -20,6 +20,7 @@
 #include "UIScreen.h"
 #include "HUD.h"
 #include "PauseMenu.h"
+#include "Skeleton.h"
 
 void Game::ProcessInput()
 {
@@ -191,17 +192,17 @@ void Game::LoadData()
         a->SetPosition(Vector3(-start + size, start + i * size, 0.0f));
         a->SetRotate(q);
     }
-
+    
     // Setup lights
     mRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
     DirectionalLight& dir = mRenderer->GetDirectionalLight();
     dir.mDirection = Vector3(0.0f, -0.707f, -0.707f);
     dir.mDiffuseColor = Vector3(0.78f, 0.88f, 1.0f);
     dir.mSpecColor = Vector3(0.8f, 0.8f, 0.8f);
-
+    
     // Different camera actors
-    mFPSActor = new FPSActor(this);
-
+    mFollowActor = new FollowActor(this);
+    
     mHUD = new HUD(this);
 
     // Create target actors
@@ -256,7 +257,7 @@ Game::Game()    :
     mIsRunning{ true },
     mTickCount{ 0 },
     mUpdatingActor{ false },
-    mFPSActor{ nullptr },
+    mFollowActor{ nullptr },
     mInputSystem{ nullptr },
     mPhysWorld{ nullptr },
     mGameState{ GamePause }
@@ -409,9 +410,9 @@ void Game::LoadText(const std::string& fileName)
     }
 }
 
-FPSActor* Game::GetPlayer() const
+FollowActor* Game::GetPlayer() const
 {
-    return mFPSActor;
+    return mFollowActor;
 }
 
 Renderer* Game::GetRenderer() const
@@ -469,6 +470,29 @@ Font* Game::GetFont(const std::string& fileName)
     }
 
     return font;
+}
+
+Skeleton* Game::GetSkeleton(const std::string& fileName)
+{
+    auto iter = mSkeletons.find(fileName);
+    if (iter != mSkeletons.end())
+    {
+        return iter->second;
+    }
+    else
+    {
+        Skeleton* sk = new Skeleton();
+        if (sk->Load(fileName))
+        {
+            mSkeletons.emplace(fileName, sk);
+        }
+        else
+        {
+            delete sk;
+            sk = nullptr;
+        }
+        return sk;
+    }
 }
 
 void Game::SetGameState(const GameState& state)

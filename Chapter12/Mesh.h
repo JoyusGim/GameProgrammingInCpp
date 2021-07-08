@@ -16,7 +16,7 @@ public:
 	Mesh();
 	~Mesh();
 
-	bool Load(const std::string& fileName, class Game* game);
+	bool Load(const std::string& fileName, class Renderer* game);
 	void Unload();
 
 	class VertexArray* GetVertexArray() const;

@@ -8,10 +8,19 @@
 #include <sstream>
 #include <rapidjson\document.h>
 
+namespace
+{
+union Vertex
+{
+    float f;
+    uint8_t b[4];
+};
+}
+
 Mesh::Mesh()    :
     mVertexArray{ nullptr },
     mRadius{ 0.f },
-    mSpecPower{ 0.f },
+    mSpecPower{ 100.f },
     mBox{Vector3::Infinity, Vector3::NegInfinity}
 {
 }
@@ -20,7 +29,7 @@ Mesh::~Mesh()
 {
 }
 
-bool Mesh::Load(const std::string& fileName, Game* game)
+bool Mesh::Load(const std::string& fileName, Renderer* renderer)
 {
     std::ifstream ifs(fileName);
     if (!ifs.is_open())
@@ -55,7 +64,16 @@ bool Mesh::Load(const std::string& fileName, Game* game)
 
     // 버텍스 레이아웃 정보는 이후 챕터에서 다룬다.
     // 현재는 하드코딩
+    VertexArray::Layout layout = VertexArray::PosNormTex;
     size_t vertSize = 8;
+
+    std::string vertexFormat = doc["vertexformat"].GetString();
+    if (vertexFormat == "PosNormSkinTex")
+    {
+        layout = VertexArray::PosNormSkinTex;
+        // This is the number of "Vertex" unions, which is 8 + 2 (for skinning)s
+        vertSize = 10;
+    }
 
     // 매쉬의 텍스처 목록 로딩
     const rapidjson::Value& textures = doc["textures"];
@@ -65,31 +83,30 @@ bool Mesh::Load(const std::string& fileName, Game* game)
         return false;
     }
 
+    // specPower 로딩
+    mSpecPower = static_cast<float>(doc["specularPower"].GetDouble());
+
     // 텍스처 로딩
     for (rapidjson::SizeType i = 0; i < textures.Size(); i++)
     {
         std::string texName = textures[i].GetString();
 
-        Texture* t = game->GetRenderer()->GetTexture(texName);
+        Texture* t = renderer->GetTexture(texName);
         // 매쉬에 등록된 텍스처를 로딩하는데 실패했다면
         if (t == nullptr)
         {
             // 기본 텍스처를 로딩
-            t = game->GetRenderer()->GetTexture("Assets/Default.png");
+            t = renderer->GetTexture(texName);
 
             // 기본 텍스처도 로딩에 실패하면
             if (t == nullptr)
             {
-                SDL_Log("Failed to load Texture %s of Mesh %s",
-                    texName.c_str(), fileName.c_str());
-                return false;
+                t = renderer->GetTexture("Assets/Default.png");
             }
         }
         mTextures.emplace_back(t);
     }
 
-    // specPower 로딩
-    mSpecPower = static_cast<float>(doc["specularPower"].GetDouble());
 
     // 버텍스 로딩
     const rapidjson::Value& vertsJson = doc["vertices"];
@@ -99,14 +116,14 @@ bool Mesh::Load(const std::string& fileName, Game* game)
         return false;
     }
 
-    std::vector<float> vertices;
+    std::vector<Vertex> vertices;
     vertices.reserve(vertsJson.Size() * vertSize);
     mRadius = 0.f;
     for (rapidjson::SizeType i = 0; i < vertsJson.Size(); i++)
     {
         // 지금은 버텍스 레이아웃은 8개의 float 인걸로 가정
         const rapidjson::Value& vert = vertsJson[i];
-        if (!vert.IsArray() || vert.Size() != 8)
+        if (!vert.IsArray())
         {
             SDL_Log("Unexpected vertex format for %s", fileName.c_str());
             return false;
@@ -116,10 +133,39 @@ bool Mesh::Load(const std::string& fileName, Game* game)
         mRadius = Math::Max(mRadius, pos.SquareLength());
         mBox.UpdateMinMax(pos);
 
-        for (rapidjson::SizeType i = 0; i < vert.Size(); i++)
+        if (layout == VertexArray::PosNormTex)
         {
-            vertices.emplace_back(static_cast<float>(vert[i].GetDouble()));
+            Vertex v;
+            for (rapidjson::SizeType j = 0; j < vert.Size(); j++)
+            {
+                v.f = static_cast<float>(vert[j].GetDouble());
+                vertices.emplace_back(v);
+            }
         }
+        else
+        {
+            Vertex v;
+            for (rapidjson::SizeType j = 0; j < 6; j++)
+            {
+                v.f = static_cast<float>(vert[j].GetDouble());
+                vertices.emplace_back(v);
+            }
+
+            for (rapidjson::SizeType j = 6; j < 14; j += 4)
+            {
+                v.b[0] = vert[j].GetUint();
+                v.b[1] = vert[j + 1].GetUint();
+                v.b[2] = vert[j + 2].GetUint();
+                v.b[3] = vert[j + 3].GetUint();
+                vertices.emplace_back(v);
+            }
+
+            for (rapidjson::SizeType j = 14; j < vert.Size(); j++)
+            {
+                v.f = vert[j].GetDouble();
+                vertices.emplace_back(v);
+            }
+        }       
     }
 
     // 길이의 제곱값을 비교하여 mRadius에 저장했으므로
@@ -152,8 +198,8 @@ bool Mesh::Load(const std::string& fileName, Game* game)
 
     // 버텍스 어레이 생성
     mVertexArray = new VertexArray(
-        vertices.data(), static_cast<unsigned int>(vertices.size()) / vertSize,
-        indices.data(), static_cast<unsigned int>(indices.size())
+        vertices.data(), static_cast<unsigned>(vertices.size()) / vertSize,
+        layout, indices.data(), static_cast<unsigned>(indices.size())
     );
 
     return true;

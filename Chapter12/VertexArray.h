@@ -1,6 +1,10 @@
 #pragma once
 class VertexArray
 {
+public:
+	enum Layout { PosNormTex, PosNormSkinTex };
+
+private:
 	unsigned int mNumVerts;
 	unsigned int mNumIndices;
 	unsigned int mVertexBuffer;
@@ -8,7 +12,7 @@ class VertexArray
 	unsigned int mVertexArray;
 
 public:
-	VertexArray(const float verts[], unsigned int numVerts, const unsigned int indices[], unsigned int numIndices);
+	VertexArray(const void* verts, unsigned int numVerts, Layout layout, const unsigned int indices[], unsigned int numIndices);
 	~VertexArray();
 
 	void SetActive();

@@ -5,6 +5,7 @@
 #include "VertexArray.h"
 #include "SpriteComponent.h"
 #include "MeshComponent.h"
+#include "SkeletalMeshComponent.h"
 #include <glew.h>
 #include "Game.h"
 #include "UIScreen.h"
@@ -40,6 +41,27 @@ bool Renderer::LoadShaders()
         10000.f
     );
     mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
+
+    mSkinnedShader = new Shader();
+    if (!mSkinnedShader->Load("Shaders/Skinned.vert", "Shaders/Phong.frag"))
+    {
+        return false;
+    }
+    mSkinnedShader->SetActive();
+
+    mView = Matrix4::CreateLookAt(
+        Vector3::Zero,
+        Vector3::UnitX,
+        Vector3::UnitZ
+    );
+    mProjection = Matrix4::CreatePerspectiveFOV(
+        Math::ToRadians(70.f),
+        mScreenWidth,
+        mScreenHeight,
+        25.f,
+        10000.f
+    );
+    mSkinnedShader->SetMatrixUniform("uViewProj", mView * mProjection);
     
     return true;
 }
@@ -58,7 +80,7 @@ bool Renderer::InitSpriteVerts()
         2, 3, 0
     };
 
-    mSpriteVerts = new VertexArray(vertexBuffer, 4, indexBuffer, 6);
+    mSpriteVerts = new VertexArray(vertexBuffer, 4, VertexArray::PosNormTex, indexBuffer, 6);
 
     return true;
 }
@@ -83,6 +105,7 @@ Renderer::Renderer(Game* game)  :
     mSpriteShader{ nullptr },
     mSpriteVerts{ nullptr },
     mMeshShader{ nullptr },
+    mSkinnedShader{ nullptr },
     mScreenWidth{ 0.f },
     mScreenHeight{ 0.f }
 {
@@ -151,6 +174,8 @@ void Renderer::Shutdown()
     delete mSpriteShader;
     mMeshShader->Unload();
     delete mMeshShader;
+    mSkinnedShader->Unload();
+    delete mSkinnedShader;
 
     SDL_GL_DeleteContext(mContext);
     SDL_DestroyWindow(mWindow);
@@ -187,6 +212,14 @@ void Renderer::Draw()
     for (auto mc : mMeshComponents)
     {
         mc->Draw(mMeshShader);
+    }
+
+    mSkinnedShader->SetActive();
+    mSkinnedShader->SetMatrixUniform("uViewProj", mView * mProjection);
+    SetLightUniforms(mSkinnedShader);
+    for (auto sk : mSkeletalMeshes)
+    {
+        sk->Draw(mSkinnedShader);
     }
 
     glDisable(GL_DEPTH_TEST);
@@ -230,16 +263,32 @@ void Renderer::RemoveSpriteComponent(SpriteComponent* sprite)
     mSprites.erase(iter);
 }
 
-void Renderer::AddMeshComponent(MeshComponent* mesh)
+void Renderer::AddMesh(MeshComponent* mesh)
 {
-    mMeshComponents.emplace_back(mesh);
+    if (mesh->GetIsSkeletal())
+    {
+        SkeletalMeshComponent* sk = reinterpret_cast<SkeletalMeshComponent*>(mesh);
+        mSkeletalMeshes.emplace_back(sk);
+    }
+    else
+    {
+        mMeshComponents.emplace_back(mesh);
+    }
 }
 
-void Renderer::RemoveMeshComponent(MeshComponent* mesh)
+void Renderer::RemoveMesh(MeshComponent* mesh)
 {
-    auto iter = std::find(mMeshComponents.begin(), mMeshComponents.end(), mesh);
-    std::iter_swap(iter, mMeshComponents.end() - 1);
-    mMeshComponents.pop_back();
+    if (mesh->GetIsSkeletal())
+    {
+        SkeletalMeshComponent* sk = reinterpret_cast<SkeletalMeshComponent*>(mesh);
+        auto iter = std::find(mSkeletalMeshes.begin(), mSkeletalMeshes.end(), sk);
+        mSkeletalMeshes.erase(iter);
+    }
+    else
+    {
+        auto iter = std::find(mMeshComponents.begin(), mMeshComponents.end(), mesh);
+        mMeshComponents.erase(iter);
+    }
 }
 
 Texture* Renderer::GetTexture(const std::string& fileName)
@@ -275,13 +324,16 @@ Mesh* Renderer::GetMesh(const std::string& fileName)
     else
     {
         mesh = new Mesh();
-        if (!mesh->Load(fileName, mGame))
+        if (mesh->Load(fileName, this))
+        {
+            mMeshes.emplace(fileName, mesh);
+        }
+        else
         {
             delete mesh;
             return nullptr;
         }
 
-        mMeshes.emplace(fileName.c_str(), mesh);
     }
 
     return mesh;

@@ -22,7 +22,7 @@ private:
 	std::vector<class Actor*> mPendingActors;
 	bool mUpdatingActor;
 
-	class FPSActor* mFPSActor;
+	class FollowActor* mFollowActor;
 	
 	std::vector<class PlaneActor*> mPlanes;
 
@@ -32,6 +32,8 @@ private:
 	std::vector<class UIScreen*> mUIStack;
 
 	std::unordered_map<std::string, std::string> mTextMap;
+
+	std::unordered_map<std::string, class Skeleton*> mSkeletons;
 
 	GameState mGameState;
 
@@ -56,7 +58,7 @@ public:
 
 	void LoadText(const std::string& fileName);
 
-	class FPSActor* GetPlayer() const;
+	class FollowActor* GetPlayer() const;
 	class Renderer* GetRenderer() const;
 	class InputSystem* GetInputSystem() const;
 	class AudioSystem* GetAudioSystem() const;
@@ -67,6 +69,8 @@ public:
 	std::vector<class UIScreen*>& GetUIStack();
 
 	class Font* GetFont(const std::string& name);
+
+	class Skeleton* GetSkeleton(const std::string& fileName);
 
 	void SetGameState(const GameState& state);
 	GameState GetGameState() const;

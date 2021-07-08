@@ -27,6 +27,9 @@ class Renderer
 	std::vector<class MeshComponent*> mMeshComponents;
 	class Shader* mMeshShader;
 
+	std::vector<class SkeletalMeshComponent*> mSkeletalMeshes;
+	class Shader* mSkinnedShader;
+
 	Matrix4 mView;
 	Matrix4 mProjection;
 
@@ -53,8 +56,8 @@ public:
 	void AddSpriteComponent(class SpriteComponent* sprite);
 	void RemoveSpriteComponent(class SpriteComponent* sprite);
 
-	void AddMeshComponent(class MeshComponent* mesh);
-	void RemoveMeshComponent(class MeshComponent* mesh);
+	void AddMesh(class MeshComponent* mesh);
+	void RemoveMesh(class MeshComponent* mesh);
 
 	class Texture* GetTexture(const std::string& fileName);
 	class Mesh* GetMesh(const std::string& fileName);
