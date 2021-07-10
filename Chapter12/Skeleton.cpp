@@ -9,14 +9,18 @@ void Skeleton::ComputeGlobalInvBindPose()
 {
     mGlobalInvBindPoses.resize(GetNumBones());
 
+    // 루트 본의 글로벌 바인드 포즈 행렬은 로컬 바인드 포즈 행렬과 같다.
     mGlobalInvBindPoses[0] = mBones[0].mLocalBindPose.ToMatrix();
 
+    // 각 본의 글로벌 바인드 포즈 행렬은 자신의 로컬 바인드 포즈 행렬과
+    // 부모의 글로벌 바인드 포즈 행렬의 곱이다.
     for (size_t i = 1; i < mGlobalInvBindPoses.size(); i++)
     {
         Matrix4 localMat = mBones[i].mLocalBindPose.ToMatrix();
         mGlobalInvBindPoses[i] = localMat * mGlobalInvBindPoses[mBones[i].mParent];
     }
 
+    // 마지막으로 모든 글로벌 바인드 포즈 행렬을 역행렬을 취한다. 
     for (size_t i = 0; i < mGlobalInvBindPoses.size(); i++)
     {
         mGlobalInvBindPoses[i].Invert();

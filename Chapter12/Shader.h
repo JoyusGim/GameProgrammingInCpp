@@ -19,6 +19,7 @@ public:
 	bool Load(const std::string& vertFile, const std::string& fragFile);
 	void Unload();
 	void SetMatrixUniform(const char* name, const class Matrix4& matrix);
+	void SetMatrixUniforms(const char* name, class Matrix4* matrices, unsigned count);
 	void SetVectorUniform(const char* name, const class Vector3& vector);
 	void SetFloatUniform(const char* name, float value);
 

@@ -30,15 +30,14 @@ out vec3 fragWorldPos;
 
 void main()
 {
-/*
 	// Convert position to homogeneous coordinates
-	vec4 pos = vec4(inPosition, 1.0);
+	vec4 skinnedPos = vec4(inPosition, 1.0);
 
 	// Skin the position
-	vec4 skinnedPos = (pos * uMatrixPalette[inSkinBones.x]) * inSkinWeights.x;
-	skinnedPos += (pos * uMatrixPalette[inSkinBones.y]) * inSkinWeights.y;
-	skinnedPos += (pos * uMatrixPalette[inSkinBones.z]) * inSkinWeights.z;
-	skinnedPos += (pos * uMatrixPalette[inSkinBones.w]) * inSkinWeights.w;
+	skinnedPos = (skinnedPos * uMatrixPalette[inSkinBones.x]) * inSkinWeights.x +
+	(skinnedPos * uMatrixPalette[inSkinBones.y]) * inSkinWeights.y +
+	(skinnedPos * uMatrixPalette[inSkinBones.z]) * inSkinWeights.z +
+	(skinnedPos * uMatrixPalette[inSkinBones.w]) * inSkinWeights.w;
 
 	// Transform position to world space
 	skinnedPos = skinnedPos * uWorldTransform;
@@ -56,21 +55,6 @@ void main()
 
 	// Transform normal into world space (w = 0)
 	fragNormal = (skinnedNormal * uWorldTransform).xyz;
-
-	// Pass along the texture coordinate to frag shader
-	fragTexCoord = inTexCoord;
-*/
-	// Convert position to homogeneous coordinates
-	vec4 pos = vec4(inPosition, 1.0);
-	// Transform position to world space
-	pos = pos * uWorldTransform;
-	// Save world position
-	fragWorldPos = pos.xyz;
-	// Transform to clip space
-	gl_Position = pos * uViewProj;
-
-	// Transform normal into world space (w = 0)
-	fragNormal = (vec4(inNormal, 0.0f) * uWorldTransform).xyz;
 
 	// Pass along the texture coordinate to frag shader
 	fragTexCoord = inTexCoord;

@@ -34,6 +34,7 @@ private:
 	std::unordered_map<std::string, std::string> mTextMap;
 
 	std::unordered_map<std::string, class Skeleton*> mSkeletons;
+	std::unordered_map<std::string, class Animation*> mAnimations;
 
 	GameState mGameState;
 
@@ -71,6 +72,7 @@ public:
 	class Font* GetFont(const std::string& name);
 
 	class Skeleton* GetSkeleton(const std::string& fileName);
+	class Animation* GetAnimation(const std::string& fileName);
 
 	void SetGameState(const GameState& state);
 	GameState GetGameState() const;

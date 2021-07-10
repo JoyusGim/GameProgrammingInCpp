@@ -21,6 +21,8 @@
 #include "HUD.h"
 #include "PauseMenu.h"
 #include "Skeleton.h"
+#include "Animation.h"
+
 
 void Game::ProcessInput()
 {
@@ -221,7 +223,7 @@ void Game::LoadData()
     a->SetPosition(Vector3(0.0f, 1450.0f, 200.0f));
     a->SetRotate(Quaternion(Vector3::UnitZ, -Math::PiOver2));
 
-    LoadText("Assets/Russian.gptext");
+    LoadText("Assets/English.gptext");
 }
 
 void Game::UnloadData()
@@ -237,12 +239,15 @@ void Game::UnloadData()
         mUIStack.pop_back();
     }
 
-    auto iter = mFonts.begin();
-    while (iter != mFonts.end())
+    for (auto f : mFonts)
     {
-        iter->second->Unload();
-        delete iter->second;
-        iter = mFonts.erase(iter);
+        f.second->Unload();
+        delete f.second;
+    }
+    
+    for (auto s : mSkeletons)
+    {
+        delete s.second;
     }
 
     if (mRenderer)
@@ -493,6 +498,30 @@ Skeleton* Game::GetSkeleton(const std::string& fileName)
         }
         return sk;
     }
+}
+
+Animation* Game::GetAnimation(const std::string& fileName)
+{
+    auto iter = mAnimations.find(fileName);
+    if (iter != mAnimations.end())
+    {
+        return iter->second;
+    }
+    else
+    {
+        Animation* anim = new Animation();
+        if (anim->Load(fileName))
+        {
+            mAnimations.emplace(fileName, anim);
+        }
+        else
+        {
+            delete anim;
+            anim = nullptr;
+        }
+        return anim;
+    }
+    
 }
 
 void Game::SetGameState(const GameState& state)

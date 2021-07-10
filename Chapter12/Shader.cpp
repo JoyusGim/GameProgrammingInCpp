@@ -117,6 +117,12 @@ void Shader::SetMatrixUniform(const char* name, const Matrix4& matrix)
     );
 }
 
+void Shader::SetMatrixUniforms(const char* name, Matrix4* matrices, unsigned count)
+{
+    GLuint loc = glGetUniformLocation(mShaderProgram, name);
+    glUniformMatrix4fv(loc, count, GL_TRUE, matrices->GetAsFloatPtr());
+}
+
 void Shader::SetVectorUniform(const char* name, const Vector3& vector)
 {
     GLuint loc = glGetUniformLocation(mShaderProgram, name);
