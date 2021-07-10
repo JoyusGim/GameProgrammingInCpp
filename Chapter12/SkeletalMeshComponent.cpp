@@ -9,7 +9,12 @@
 #include "Animation.h"
 
 SkeletalMeshComponent::SkeletalMeshComponent(Actor* owner)	:
-	MeshComponent(owner, true)
+	MeshComponent(owner, true),
+	mCurrAnimation{ nullptr },
+	mCurrAnimTime{ 0.f },
+	mNextAnimation{ nullptr },
+	mNextAnimTime{ 0.f },
+	mAnimPlayRate{ 0.f }
 {
 }
 
@@ -33,12 +38,31 @@ void SkeletalMeshComponent::Draw(Shader* shader)
 
 void SkeletalMeshComponent::Update(float deltaTime)
 {
-	if (mAnimation && mSkeleton)
+	if (mCurrAnimation && mSkeleton)
 	{
-		mAnimTime += deltaTime * mAnimPlayRate;
-		while (mAnimTime > mAnimation->GetDuration())
+		mCurrAnimTime += deltaTime * mAnimPlayRate;
+		while (mCurrAnimTime > mCurrAnimation->GetDuration())
 		{
-			mAnimTime -= mAnimation->GetDuration();
+			mCurrAnimTime -= mCurrAnimation->GetDuration();
+		}
+
+		if (mNextAnimation)
+		{
+			mNextAnimTime += deltaTime * mAnimPlayRate;
+			while (mNextAnimTime > mNextAnimation->GetDuration())
+			{
+				mNextAnimTime -= mNextAnimation->GetDuration();
+			}
+			mBlendTime += deltaTime * mAnimPlayRate;
+			if (mBlendTime > mBlendDuration)
+			{
+				mCurrAnimation = mNextAnimation;
+				mCurrAnimTime = mNextAnimTime;
+				mNextAnimation = nullptr;
+				mNextAnimTime = 0.f;
+				mBlendDuration = 0.f;
+				mBlendTime = 0.f;
+			}
 		}
 
 		ComputeMatrixPalette();
@@ -50,7 +74,11 @@ void SkeletalMeshComponent::ComputeMatrixPalette()
 	const std::vector<Matrix4>& globalInvVindPoses =
 		mSkeleton->GetGlobalInvBindPoses();
 	std::vector<Matrix4> currentPoses;
-	mAnimation->GetGlobalPoseAtTime(currentPoses, mSkeleton, mAnimTime);
+		
+	if (!mNextAnimation)
+		mCurrAnimation->GetGlobalPoseAtTime(currentPoses, mSkeleton, mCurrAnimTime);
+	else
+		Animation::GetBlendedGlobalPoseAtTime(currentPoses, mSkeleton, mCurrAnimation, mCurrAnimTime, mNextAnimation, mNextAnimTime, mBlendTime / mBlendDuration);
 
 	for (size_t i = 0; i < mSkeleton->GetNumBones(); i++)
 	{
@@ -58,17 +86,28 @@ void SkeletalMeshComponent::ComputeMatrixPalette()
 	}
 }
 
-float SkeletalMeshComponent::PlayAnimation(const Animation* anim, float playRate /* = 1.f */)
+float SkeletalMeshComponent::PlayAnimation(const Animation* anim, float blendDuration /* = 0.f */, float playRate /* = 1.f */)
 {
-	mAnimation = anim;
-	mAnimTime = 0.f;
-	mAnimPlayRate = playRate;
+	if (!mCurrAnimation)
+	{
+		mCurrAnimation = anim;
+		mCurrAnimTime = 0.f;
+		mAnimPlayRate = playRate;
+	}
+	else
+	{
+		mNextAnimation = anim;
+		mNextAnimTime = 0.f;
+		mAnimPlayRate = playRate;
+	}
+	mBlendDuration = blendDuration;
+	mBlendTime = 0.f;
 
-	if (!mAnimation)
+	if (!mCurrAnimation)
 		return 0.f;
 
 	ComputeMatrixPalette();
-	return mAnimation->GetDuration();
+	return mCurrAnimation->GetDuration();
 }
 
 void SkeletalMeshComponent::SetSkeleton(Skeleton* skeleton)

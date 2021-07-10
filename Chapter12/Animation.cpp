@@ -150,6 +150,77 @@ void Animation::GetGlobalPoseAtTime(std::vector<Matrix4>& outPoses, const Skelet
     }
 }
 
+void Animation::GetBlendedGlobalPoseAtTime(std::vector<Matrix4>& outPoses, const Skeleton* inSkeleton, const Animation* inA, float inTimeA, const Animation* inB, float inTimeB, float inBlendTime)
+{
+    size_t numBones = inSkeleton->GetNumBones();
+    if (outPoses.size() != numBones)
+    {
+        outPoses.resize(numBones);
+    }
+
+    size_t frameA = static_cast<size_t>(inTimeA / inA->mFrameDuration);
+    size_t nextFrameA = frameA + 1;
+    size_t frameB = static_cast<size_t>(inTimeB / inB->mFrameDuration);
+    size_t nextFrameB = frameB + 1;
+    float pctA = inTimeA / inA->mFrameDuration - frameA;
+    float pctB = inTimeB / inB->mFrameDuration - frameB;
+
+    BoneTransform interpA, interpB, interp;
+    if (inA->mTracks[0].size() > 0 && inB->mTracks[0].size() > 0)
+    {
+        interpA = BoneTransform::Interpolation(inA->mTracks[0][frameA],
+            inA->mTracks[0][nextFrameA], pctA);
+        interpB = BoneTransform::Interpolation(inB->mTracks[0][frameB],
+            inB->mTracks[0][nextFrameB], pctB);
+        interp = BoneTransform::Interpolation(interpA, interpB, inBlendTime);
+        outPoses[0] = interp.ToMatrix();
+    }
+    else if(inA->mTracks[0].size() > 0)
+    {
+        interpA = BoneTransform::Interpolation(inA->mTracks[0][frameA],
+            inA->mTracks[0][nextFrameA], pctA);
+        outPoses[0] = interpA.ToMatrix();
+    }
+    else if (inB->mTracks[0].size() > 0)
+    {
+        interpB = BoneTransform::Interpolation(inB->mTracks[0][frameB],
+            inB->mTracks[0][nextFrameB], pctB);
+        outPoses[0] = interpB.ToMatrix();
+    }
+    else
+    {
+        outPoses[0] = Matrix4::Identity;
+    }
+
+    const std::vector<Skeleton::Bone>& bones = inSkeleton->GetBones();
+    for (size_t bone = 1; bone < inSkeleton->GetNumBones(); bone++)
+    {
+
+        Matrix4 localMat;
+        if (inA->mTracks[bone].size() > 0 && inB->mTracks[bone].size() > 0)
+        {
+            BoneTransform interpA = BoneTransform::Interpolation(inA->mTracks[bone][frameA],
+                inA->mTracks[bone][nextFrameA], pctA);
+            BoneTransform interpB = BoneTransform::Interpolation(inB->mTracks[bone][frameB],
+                inB->mTracks[bone][nextFrameB], pctB);
+            localMat = BoneTransform::Interpolation(interpA, interpB, inBlendTime).ToMatrix();
+        }
+        else if (inA->mTracks[bone].size() > 0)
+        {
+            localMat = BoneTransform::Interpolation(inA->mTracks[bone][frameA],
+                inA->mTracks[bone][nextFrameA], pctA).ToMatrix();
+        }
+        else if (inB->mTracks[bone].size() > 0)
+        {
+            localMat = BoneTransform::Interpolation(inB->mTracks[bone][frameB],
+                inB->mTracks[bone][nextFrameB], pctB).ToMatrix();
+        }
+
+        outPoses[bone] = localMat * outPoses[bones[bone].mParent];
+    }
+}
+
+
 size_t Animation::GetNumBones() const
 {
     return mNumBones;

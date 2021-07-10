@@ -6,9 +6,13 @@ class SkeletalMeshComponent :
     public MeshComponent
 {
     const class Skeleton* mSkeleton;
-    const class Animation* mAnimation;
+    const class Animation* mCurrAnimation;
+    const class Animation* mNextAnimation;
     float mAnimPlayRate;
-    float mAnimTime;
+    float mCurrAnimTime;
+    float mNextAnimTime;
+    float mBlendDuration;
+    float mBlendTime;
     MatrixPalette mPalette;
 
 public:
@@ -18,7 +22,7 @@ public:
     void Update(float deltaTime) override;
 
     void ComputeMatrixPalette();
-    float PlayAnimation(const class Animation* anim, float playRate = 1.f);
+    float PlayAnimation(const class Animation* anim, float blendDuration = 0.f, float playRate = 1.f);
 
     void SetSkeleton(class Skeleton* skeleton);
 };

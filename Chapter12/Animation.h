@@ -16,6 +16,12 @@ public:
 	void GetGlobalPoseAtTime(std::vector<Matrix4>& outPoses,
 		const class Skeleton* inSkeleton, float inTime) const;
 
+	static void GetBlendedGlobalPoseAtTime(std::vector<Matrix4>& outPoses,
+		const class Skeleton* inSkeleton,
+		const class Animation* inA, float inTimeA,
+		const class Animation* inB, float inTimeB,
+		float inBlendTime);
+
 	size_t GetNumBones() const;
 	size_t GetNumFrames() const;
 	float GetDuration() const;

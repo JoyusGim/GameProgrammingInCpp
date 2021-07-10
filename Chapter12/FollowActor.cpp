@@ -50,12 +50,12 @@ void FollowActor::ActorInput(const InputState& input)
 	if (!mMoving && !Math::NearZero(forwardSpeed))
 	{
 		mMoving = true;
-		mMeshComp->PlayAnimation(GetGame()->GetAnimation("Assets/CatRunSprint.gpanim"), 1.25);
+		mMeshComp->PlayAnimation(GetGame()->GetAnimation("Assets/CatRunSprint.gpanim"), 0.3f, 1.25);
 	}
 	else if (mMoving && Math::NearZero(forwardSpeed))
 	{
 		mMoving = false;
-		mMeshComp->PlayAnimation(GetGame()->GetAnimation("Assets/CatActionIdle.gpanim"));
+		mMeshComp->PlayAnimation(GetGame()->GetAnimation("Assets/CatActionIdle.gpanim"), 0.3f);
 	}
 
 	mMoveComp->SetForwardSpeed(forwardSpeed);
