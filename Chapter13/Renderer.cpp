@@ -134,7 +134,7 @@ bool Renderer::Initialize(float screenWidth, float screenHeight)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     mWindow = SDL_CreateWindow(
-        "Game Programming in C++ Chapter 12",
+        "Game Programming in C++ Chapter 13",
         100, 100,
         static_cast<int>(mScreenWidth), static_cast<int>(mScreenHeight),
         SDL_WINDOW_OPENGL
