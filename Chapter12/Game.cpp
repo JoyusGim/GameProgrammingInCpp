@@ -250,6 +250,11 @@ void Game::UnloadData()
         delete s.second;
     }
 
+    for (auto a : mAnimations)
+    {
+        delete a.second;
+    }
+
     if (mRenderer)
     {
         mRenderer->UnloadData();
