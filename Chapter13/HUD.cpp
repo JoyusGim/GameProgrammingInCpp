@@ -78,6 +78,8 @@ HUD::HUD(Game* game)	:
 
 void HUD::Update(float deltaTime)
 {
+	UIScreen::Update(deltaTime);
+
 	UpdateCrossHair(deltaTime);
 	UpdateRadar(deltaTime);
 }
@@ -95,6 +97,9 @@ void HUD::Draw(Shader* shader)
 		DrawTexture(shader, mBlipTex, cRadarPos + blip, 1.f);
 	}
 	DrawTexture(shader, mRadarArrow, cRadarPos);
+
+	Texture* mirror = mGame->GetRenderer()->GetMirrorTexture();
+	DrawTexture(shader, mirror, Vector2(-350.f, -250.f), 1.f, true);
 }
 
 void HUD::AddTarget(TargetComponent* target)

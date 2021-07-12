@@ -51,7 +51,7 @@ protected:
 	std::vector<class Button*> mButtons;
 	UIState mState;
 
-	void DrawTexture(class Shader* shader, class Texture* texture, const Vector2& offset = Vector2::Zero, float scale = 1.f);
+	void DrawTexture(class Shader* shader, class Texture* texture, const Vector2& offset = Vector2::Zero, float scale = 1.f, bool flipY = false);
 
 public:
 	UIScreen(class Game* game);

@@ -224,6 +224,7 @@ void Game::LoadData()
     a->SetRotate(Quaternion(Vector3::UnitZ, -Math::PiOver2));
 
     LoadText("Assets/English.gptext");
+    
 }
 
 void Game::UnloadData()
@@ -248,6 +249,11 @@ void Game::UnloadData()
     for (auto s : mSkeletons)
     {
         delete s.second;
+    }
+
+    for (auto a : mAnimations)
+    {
+        delete a.second;
     }
 
     if (mRenderer)
@@ -288,6 +294,8 @@ bool Game::Initialize()
 
     mRenderer = new Renderer(this);
     if (!mRenderer->Initialize(1024.f, 768.f))
+        return false;
+    if (!mRenderer->CreateMirrorTarget())
         return false;
 
     mAudioSystem = new AudioSystem(this);

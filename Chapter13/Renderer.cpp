@@ -98,6 +98,38 @@ void Renderer::SetLightUniforms(Shader* shader)
     shader->SetVectorUniform("uDirLight.mSpecColor", mDirLight.mSpecColor);
 }
 
+void Renderer::Draw3DScene(unsigned int framebuffer, const Matrix4& view, const Matrix4& proj, float viewportScale)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    
+    glViewport(0, 0,
+        static_cast<int>(mScreenWidth * viewportScale),
+        static_cast<int>(mScreenHeight * viewportScale)
+    );
+
+    glClearColor(0.f, 0.f, 0.f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+
+    mMeshShader->SetActive();
+    mMeshShader->SetMatrixUniform("uViewProj", view * proj);
+    SetLightUniforms(mMeshShader);
+    for (auto mc : mMeshComponents)
+    {
+        mc->Draw(mMeshShader);
+    }
+
+    mSkinnedShader->SetActive();
+    mSkinnedShader->SetMatrixUniform("uViewProj", view * proj);
+    SetLightUniforms(mSkinnedShader);
+    for (auto sk : mSkeletalMeshes)
+    {
+        sk->Draw(mSkinnedShader);
+    }
+}
+
 Renderer::Renderer(Game* game)  :
     mGame{ game },
     mContext{},
@@ -106,6 +138,8 @@ Renderer::Renderer(Game* game)  :
     mSpriteVerts{ nullptr },
     mMeshShader{ nullptr },
     mSkinnedShader{ nullptr },
+    mMirrorTexture{ nullptr },
+    mMirrorBuffer{ 0 },
     mScreenWidth{ 0.f },
     mScreenHeight{ 0.f }
 {
@@ -115,7 +149,7 @@ Renderer::~Renderer()
 {
 }
 
-bool Renderer::Initialize(float screenWidth, float screenHeight)
+bool Renderer::Initialize(float screenWidth, float screenHeight /* = 1.f */)
 {
     mScreenWidth = screenWidth;
     mScreenHeight = screenHeight;
@@ -196,31 +230,17 @@ void Renderer::UnloadData()
         delete m.second;
     }
     mMeshes.clear();
+
+    mMirrorTexture->Unload();
+    delete mMirrorTexture;
+
+    glDeleteBuffers(1, &mMirrorBuffer);
 }
 
 void Renderer::Draw()
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-
-    mMeshShader->SetActive();
-    mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
-    SetLightUniforms(mMeshShader);
-    for (auto mc : mMeshComponents)
-    {
-        mc->Draw(mMeshShader);
-    }
-
-    mSkinnedShader->SetActive();
-    mSkinnedShader->SetMatrixUniform("uViewProj", mView * mProjection);
-    SetLightUniforms(mSkinnedShader);
-    for (auto sk : mSkeletalMeshes)
-    {
-        sk->Draw(mSkinnedShader);
-    }
+    Draw3DScene(mMirrorBuffer, mMirrorView, mProjection, 0.25f);
+    Draw3DScene(0, mView, mProjection);
 
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -291,6 +311,40 @@ void Renderer::RemoveMesh(MeshComponent* mesh)
     }
 }
 
+bool Renderer::CreateMirrorTarget()
+{
+    int width = static_cast<int>(mScreenWidth) / 4;
+    int height = static_cast<int>(mScreenHeight) / 4;
+
+    glGenFramebuffers(1, &mMirrorBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, mMirrorBuffer);
+
+    mMirrorTexture = new Texture();
+    mMirrorTexture->CreateForRendering(width, height, GL_RGB);
+
+    GLuint depthBuffer;
+    glGenRenderbuffers(1, &depthBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mMirrorTexture->GetTextureID(), 0);
+
+    GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, drawBuffers);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        glDeleteFramebuffers(1, &mMirrorBuffer);
+        mMirrorTexture->Unload();
+        delete mMirrorTexture;
+        mMirrorTexture = nullptr;
+        return false;
+    }
+
+    return true;
+}
+
 Texture* Renderer::GetTexture(const std::string& fileName)
 {
     Texture* texture = nullptr;
@@ -352,6 +406,16 @@ float Renderer::GetScreenHeight() const
 void Renderer::SetViewMatrix(const Matrix4& view)
 {
     mView = view;
+}
+
+void Renderer::SetMirrorViewMatrix(const Matrix4& mirrorView)
+{
+    mMirrorView = mirrorView;
+}
+
+Texture* Renderer::GetMirrorTexture() const
+{
+    return mMirrorTexture;
 }
 
 void Renderer::SetAmbientLight(const Vector3& ambient)

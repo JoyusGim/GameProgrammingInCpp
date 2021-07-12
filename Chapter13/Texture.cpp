@@ -54,7 +54,7 @@ bool Texture::Load(const std::string& fileName)
     SOIL_free_image_data(image);
 
     glGenerateMipmap(GL_TEXTURE_2D);
-
+    
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -88,6 +88,11 @@ int Texture::GetHeight() const
     return mHeight;
 }
 
+unsigned int Texture::GetTextureID() const
+{
+    return mTextureID;
+}
+
 void Texture::CreateFromSurface(SDL_Surface* surface)
 {
     mWidth = surface->w;
@@ -102,4 +107,18 @@ void Texture::CreateFromSurface(SDL_Surface* surface)
     // Use linear filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
+void Texture::CreateForRendering(int width, int height, unsigned int format)
+{
+    mWidth = width;
+    mHeight = height;
+
+    glGenTextures(1, &mTextureID);
+    glBindTexture(GL_TEXTURE_2D, mTextureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, mWidth, mHeight, 0, GL_RGB, GL_FLOAT, nullptr);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
 }

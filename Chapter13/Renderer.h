@@ -30,7 +30,11 @@ class Renderer
 	std::vector<class SkeletalMeshComponent*> mSkeletalMeshes;
 	class Shader* mSkinnedShader;
 
+	unsigned int mMirrorBuffer;
+	class Texture* mMirrorTexture;
+
 	Matrix4 mView;
+	Matrix4 mMirrorView;
 	Matrix4 mProjection;
 
 	float mScreenWidth;
@@ -42,6 +46,8 @@ class Renderer
 	bool LoadShaders();
 	bool InitSpriteVerts();
 	void SetLightUniforms(class Shader* shader);
+
+	void Draw3DScene(unsigned int framebuffer, const Matrix4& view, const Matrix4& proj, float viewportScale = 1.f);
 
 public:
 	Renderer(class Game* game);
@@ -59,6 +65,8 @@ public:
 	void AddMesh(class MeshComponent* mesh);
 	void RemoveMesh(class MeshComponent* mesh);
 
+	bool CreateMirrorTarget();
+
 	class Texture* GetTexture(const std::string& fileName);
 	class Mesh* GetMesh(const std::string& fileName);
 
@@ -66,6 +74,9 @@ public:
 	float GetScreenHeight() const;
 
 	void SetViewMatrix(const Matrix4& view);
+	
+	void SetMirrorViewMatrix(const Matrix4& mirrorView);
+	class Texture* GetMirrorTexture() const;
 
 	void SetAmbientLight(const Vector3& ambient);
 	DirectionalLight& GetDirectionalLight();

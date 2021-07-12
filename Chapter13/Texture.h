@@ -17,7 +17,9 @@ public:
 	void SetActive();
 	int GetWidth() const;
 	int GetHeight() const;
+	unsigned int GetTextureID() const;
 
 	void CreateFromSurface(struct SDL_Surface* surface);
+	void CreateForRendering(int width, int height, unsigned int format);
 };
 

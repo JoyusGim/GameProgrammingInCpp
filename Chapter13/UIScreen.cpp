@@ -77,14 +77,17 @@ Texture* Button::GetNameTex() const
 }
 
 
-void UIScreen::DrawTexture(Shader* shader, Texture* texture, const Vector2& offset, float scale)
+void UIScreen::DrawTexture(Shader* shader, Texture* texture, const Vector2& offset, float scale /* = 1.f */, bool flipY /* = false */)
 {
+    float scaleY = static_cast<float>(texture->GetHeight()) * scale;
+    if (flipY) scaleY *= -1.f;
 
     Matrix4 scaleMat = Matrix4::CreateScale(
-        static_cast<float>(texture->GetWidth()),
-        static_cast<float>(texture->GetHeight()),
+        static_cast<float>(texture->GetWidth()) * scale,
+        scaleY,
         1.f
     );
+
 
     Matrix4 transMat = Matrix4::CreateTranslation(
         Vector3(offset.x, offset.y, 0.f));
@@ -106,7 +109,7 @@ UIScreen::UIScreen(Game* game)  :
 {
     game->PushUI(this);
     mFont = mGame->GetFont("Assets/Carlito-Regular.ttf");
-    mButtonOn = mGame->GetRenderer()->GetTexture("Assets/test.jpg");
+    mButtonOn = mGame->GetRenderer()->GetTexture("Assets/ButtonYellow.png");
     mButtonOff = mGame->GetRenderer()->GetTexture("Assets/ButtonBlue.png");
 }
 
