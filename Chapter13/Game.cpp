@@ -173,26 +173,32 @@ void Game::LoadData()
             pos.z += 100.0f;
             a->SetPosition(pos);
             PointLightComponent* p = new PointLightComponent(a);
-            Vector3 color;
+            Vector3 color, specColor;
             switch ((i + j) % 5)
             {
             case 0:
                 color = Color::Green;
+                specColor = Vector3(0.f, 0.2f, 0.f);
                 break;
             case 1:
                 color = Color::Blue;
+                specColor = Vector3(0.f, 0.f, 0.2f);
                 break;
             case 2:
                 color = Color::Red;
+                specColor = Vector3(0.2f, 0.f, 0.f);
                 break;
             case 3:
                 color = Color::Yellow;
+                specColor = Vector3(0.2f, 0.2f, 0.f);
                 break;
             case 4:
                 color = Color::LightPink;
+                specColor = Vector3(0.2f, 0.14f, 0.14f);
                 break;
             }
             p->SetDiffuseColor(color);
+            p->SetSpecColor(specColor);
             p->SetInnerRadius(100.0f);
             p->SetOuterRadius(200.0f);
         }

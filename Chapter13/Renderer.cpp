@@ -74,6 +74,7 @@ bool Renderer::LoadShaders()
     mGGlobalShader->SetIntUniform("uGDiffuse", 0);
     mGGlobalShader->SetIntUniform("uGNormal", 1);
     mGGlobalShader->SetIntUniform("uGWorldPos", 2);
+    mGGlobalShader->SetIntUniform("uGSpecPower", 3);
 
     mGGlobalShader->SetMatrixUniform("uViewProj", viewProj);
     Matrix4 gbufferWorld = Matrix4::CreateScale(mScreenWidth, -mScreenHeight, 1.f);
@@ -89,6 +90,7 @@ bool Renderer::LoadShaders()
     mGPointLightShader->SetIntUniform("uGDiffuse", 0);
     mGPointLightShader->SetIntUniform("uGNormal", 1);
     mGPointLightShader->SetIntUniform("uGWorldPos", 2);
+    mGPointLightShader->SetIntUniform("uGSpecPower", 3);
     mGPointLightShader->SetVector2Uniform("uScreenDimensions", Vector2(mScreenWidth, mScreenHeight));
 
     return true;
@@ -186,6 +188,8 @@ void Renderer::DrawFromGBuffer()
     mGPointLightShader->SetActive();
     mPointLightMesh->GetVertexArray()->SetActive();
     mGPointLightShader->SetMatrixUniform("uViewProj", mView * mProjection);
+    Matrix4 invView = mView; invView.Invert();
+    mGPointLightShader->SetVectorUniform("uCameraPos", invView.GetTranslation());
     mGBuffer->SetTexturesActive();
 
     glEnable(GL_BLEND);

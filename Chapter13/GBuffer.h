@@ -9,6 +9,7 @@ public:
 		Diffuse = 0,
 		Normal,
 		WorldPos,
+		Specular,
 		NUM_GBUFFER_TEXTURES
 	};
 

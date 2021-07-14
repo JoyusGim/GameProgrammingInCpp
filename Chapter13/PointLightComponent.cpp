@@ -26,6 +26,7 @@ void PointLightComponent::Draw(Shader* shader, Mesh* mesh)
 
 	shader->SetVectorUniform("uPointLight.mWorldPos", mOwner->GetPosition());
 	shader->SetVectorUniform("uPointLight.mDiffuseColor", mDiffuseColor);
+	shader->SetVectorUniform("uPointLight.mSpecColor", mSpecColor);
 	shader->SetFloatUniform("uPointLight.mInnerRadius", mInnerRadius);
 	shader->SetFloatUniform("uPointLight.mOuterRadius", mOuterRadius);
 
@@ -35,6 +36,11 @@ void PointLightComponent::Draw(Shader* shader, Mesh* mesh)
 void PointLightComponent::SetDiffuseColor(const Vector3& color)
 {
 	mDiffuseColor = color;
+}
+
+void PointLightComponent::SetSpecColor(const Vector3& color)
+{
+	mSpecColor = color;
 }
 
 void PointLightComponent::SetInnerRadius(float radius)
