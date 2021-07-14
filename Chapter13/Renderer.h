@@ -33,6 +33,13 @@ class Renderer
 	unsigned int mMirrorBuffer;
 	class Texture* mMirrorTexture;
 
+	class Shader* mGGlobalShader;
+	class GBuffer* mGBuffer;
+
+	std::vector<class PointLightComponent*> mPointLights;
+	class Shader* mGPointLightShader;
+	class Mesh* mPointLightMesh;
+
 	Matrix4 mView;
 	Matrix4 mMirrorView;
 	Matrix4 mProjection;
@@ -45,9 +52,10 @@ class Renderer
 
 	bool LoadShaders();
 	bool InitSpriteVerts();
-	void SetLightUniforms(class Shader* shader);
+	void SetLightUniforms(class Shader* shader, const Matrix4& view);
 
-	void Draw3DScene(unsigned int framebuffer, const Matrix4& view, const Matrix4& proj, float viewportScale = 1.f);
+	void Draw3DScene(unsigned int framebuffer, const Matrix4& view, const Matrix4& proj, float viewportScale = 1.f, bool lit = false);
+	void DrawFromGBuffer();
 
 public:
 	Renderer(class Game* game);
@@ -77,6 +85,9 @@ public:
 	
 	void SetMirrorViewMatrix(const Matrix4& mirrorView);
 	class Texture* GetMirrorTexture() const;
+
+	void AddPointLight(class PointLightComponent* light);
+	void RemovePointLight(class PointLightComponent* light);
 
 	void SetAmbientLight(const Vector3& ambient);
 	DirectionalLight& GetDirectionalLight();

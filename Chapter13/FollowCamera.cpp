@@ -13,7 +13,7 @@ Vector3 FollowCamera::ComputeCameraPos() const
 FollowCamera::FollowCamera(Actor* owner)    :
     CameraComponent(owner),
     mHorzDist{ 350.f },
-    mVertDist{ 150.f },
+    mVertDist{ 250.f },
     mTargetDist{ 100.f },
     mSpringConstant{ 64.f }
 {

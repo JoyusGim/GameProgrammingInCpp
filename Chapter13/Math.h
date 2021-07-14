@@ -111,6 +111,11 @@ public:
 	Vector2() : x{ 0.f }, y{ 0.f } {}
 	explicit Vector2(float x, float y) : x{ x }, y{ y } {}
 
+	const float* GetAsFloatPtr() const
+	{
+		return reinterpret_cast<const float*>(&x);
+	}
+
 	friend Vector2 operator+(const Vector2& a, const Vector2& b)
 	{
 		return Vector2(a.x + b.x, a.y + b.y);

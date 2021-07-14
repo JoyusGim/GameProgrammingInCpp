@@ -14,7 +14,7 @@ public:
 	bool Load(const std::string& fileName);
 	void Unload();
 
-	void SetActive();
+	void SetActive(int index = 0);
 	int GetWidth() const;
 	int GetHeight() const;
 	unsigned int GetTextureID() const;

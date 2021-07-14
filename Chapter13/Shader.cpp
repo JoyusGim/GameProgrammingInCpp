@@ -126,14 +126,25 @@ void Shader::SetMatrixUniforms(const char* name, Matrix4* matrices, unsigned cou
 void Shader::SetVectorUniform(const char* name, const Vector3& vector)
 {
     GLuint loc = glGetUniformLocation(mShaderProgram, name);
-
     glUniform3fv(loc, 1, vector.GetAsFloatPtr());
+}
+
+void Shader::SetVector2Uniform(const char* name, const Vector2& vector)
+{
+    GLuint loc = glGetUniformLocation(mShaderProgram, name);
+    glUniform2fv(loc, 1, vector.GetAsFloatPtr());
 }
 
 void Shader::SetFloatUniform(const char* name, float value)
 {
     GLuint loc = glGetUniformLocation(mShaderProgram, name);
     glUniform1f(loc, value);
+}
+
+void Shader::SetIntUniform(const char* name, int value)
+{
+    GLuint loc = glGetUniformLocation(mShaderProgram, name);
+    glUniform1i(loc, value);
 }
 
 void Shader::SetActive()

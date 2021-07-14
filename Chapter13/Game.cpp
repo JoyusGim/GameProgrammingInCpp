@@ -22,6 +22,7 @@
 #include "PauseMenu.h"
 #include "Skeleton.h"
 #include "Animation.h"
+#include "PointLightComponent.h"
 
 
 void Game::ProcessInput()
@@ -165,7 +166,35 @@ void Game::LoadData()
         for (int j = 0; j < 10; j++)
         {
             a = new PlaneActor(this);
-            a->SetPosition(Vector3(start + i * size, start + j * size, -100.0f));
+            Vector3 pos = Vector3(start + i * size, start + j * size, -100.0f);
+            a->SetPosition(pos);
+            // Create some point lights
+            a = new Actor(this);
+            pos.z += 100.0f;
+            a->SetPosition(pos);
+            PointLightComponent* p = new PointLightComponent(a);
+            Vector3 color;
+            switch ((i + j) % 5)
+            {
+            case 0:
+                color = Color::Green;
+                break;
+            case 1:
+                color = Color::Blue;
+                break;
+            case 2:
+                color = Color::Red;
+                break;
+            case 3:
+                color = Color::Yellow;
+                break;
+            case 4:
+                color = Color::LightPink;
+                break;
+            }
+            p->SetDiffuseColor(color);
+            p->SetInnerRadius(100.0f);
+            p->SetOuterRadius(200.0f);
         }
     }
 
