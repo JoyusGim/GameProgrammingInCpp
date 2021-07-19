@@ -23,6 +23,7 @@
 #include "Skeleton.h"
 #include "Animation.h"
 #include "PointLightComponent.h"
+#include "LevelLoader.h"
 
 
 void Game::ProcessInput()
@@ -51,7 +52,7 @@ void Game::ProcessInput()
         case SDL_MOUSEBUTTONUP:
             mInputSystem->SetRelativeMouseMode(false);
             break;
-        */   
+        */
         default:
             break;
         }
@@ -77,6 +78,11 @@ void Game::ProcessInput()
     else if (mGameState == GamePause)
     {
         mUIStack.back()->ProcessInput(state);
+    }
+
+    if (state.Keyboard.GetKeyState(SDL_SCANCODE_R) == Pressed)
+    {
+        LevelLoader::SaveLevel(this, "Assets/saved.gplevel");
     }
 }
 
@@ -152,114 +158,12 @@ void Game::GenerateOutput()
 }
 
 void Game::LoadData()
-{
-    // Create actors
-    Actor* a = nullptr;
-    Quaternion q;
-    //MeshComponent* mc = nullptr;
+{    
+    LoadText("Assets/English.gptext");
 
-    // Setup floor
-    const float start = -1250.0f;
-    const float size = 250.0f;
-    for (int i = 0; i < 10; i++)
-    {
-        for (int j = 0; j < 10; j++)
-        {
-            a = new PlaneActor(this);
-            Vector3 pos = Vector3(start + i * size, start + j * size, -100.0f);
-            a->SetPosition(pos);
-            // Create some point lights
-            a = new Actor(this);
-            pos.z += 100.0f;
-            a->SetPosition(pos);
-            PointLightComponent* p = new PointLightComponent(a);
-            Vector3 color, specColor;
-            switch ((i + j) % 5)
-            {
-            case 0:
-                color = Color::Green;
-                specColor = Vector3(0.f, 0.2f, 0.f);
-                break;
-            case 1:
-                color = Color::Blue;
-                specColor = Vector3(0.f, 0.f, 0.2f);
-                break;
-            case 2:
-                color = Color::Red;
-                specColor = Vector3(0.2f, 0.f, 0.f);
-                break;
-            case 3:
-                color = Color::Yellow;
-                specColor = Vector3(0.2f, 0.2f, 0.f);
-                break;
-            case 4:
-                color = Color::LightPink;
-                specColor = Vector3(0.2f, 0.14f, 0.14f);
-                break;
-            }
-            p->SetDiffuseColor(color);
-            p->SetSpecColor(specColor);
-            p->SetInnerRadius(100.0f);
-            p->SetOuterRadius(200.0f);
-        }
-    }
-
-    // Left/right walls
-    q = Quaternion(Vector3::UnitX, Math::PiOver2);
-    for (int i = 0; i < 10; i++)
-    {
-        a = new PlaneActor(this);
-        a->SetPosition(Vector3(start + i * size, start - size, 0.0f));
-        a->SetRotate(q);
-
-        a = new PlaneActor(this);
-        a->SetPosition(Vector3(start + i * size, -start + size, 0.0f));
-        a->SetRotate(q);
-    }
-
-    q = Quaternion::Concatenate(q, Quaternion(Vector3::UnitZ, Math::PiOver2));
-    // Forward/back walls
-    for (int i = 0; i < 10; i++)
-    {
-        a = new PlaneActor(this);
-        a->SetPosition(Vector3(start - size, start + i * size, 0.0f));
-        a->SetRotate(q);
-
-        a = new PlaneActor(this);
-        a->SetPosition(Vector3(-start + size, start + i * size, 0.0f));
-        a->SetRotate(q);
-    }
-    
-    // Setup lights
-    mRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
-    DirectionalLight& dir = mRenderer->GetDirectionalLight();
-    dir.mDirection = Vector3(0.0f, -0.707f, -0.707f);
-    dir.mDiffuseColor = Vector3(0.78f, 0.88f, 1.0f);
-    dir.mSpecColor = Vector3(0.8f, 0.8f, 0.8f);
-    
-    // Different camera actors
-    mFollowActor = new FollowActor(this);
-    
     mHUD = new HUD(this);
 
-    // Create target actors
-    a = new TargetActor(this);
-    a->SetPosition(Vector3(1450.0f, 0.0f, 100.0f));
-    a = new TargetActor(this);
-    a->SetPosition(Vector3(1450.0f, 0.0f, 400.0f));
-    a = new TargetActor(this);
-    a->SetPosition(Vector3(1450.0f, -500.0f, 200.0f));
-    a = new TargetActor(this);
-    a->SetPosition(Vector3(1450.0f, 500.0f, 200.0f));
-    a = new TargetActor(this);
-    a->SetPosition(Vector3(0.0f, -1450.0f, 200.0f));
-    a->SetRotate(Quaternion(Vector3::UnitZ, Math::PiOver2));
-    a = new TargetActor(this);
-    a->SetPosition(Vector3(0.0f, 1450.0f, 200.0f));
-    a->SetRotate(Quaternion(Vector3::UnitZ, -Math::PiOver2));
-
-    LoadText("Assets/English.gptext");
-    
+    LevelLoader::LoadLevel(this, "Assets/saved.gplevel");
 }
 
 void Game::UnloadData()
@@ -401,6 +305,11 @@ void Game::AddActor(Actor* actor)
     }
 }
 
+const std::vector<class Actor*>& Game::GetActors() const
+{
+    return mActors;
+}
+
 void Game::RemoveActor(Actor* actor)
 {
     auto iter = std::find(mPendingActors.begin(), mPendingActors.end(), actor);
@@ -461,6 +370,11 @@ void Game::LoadText(const std::string& fileName)
 FollowActor* Game::GetPlayer() const
 {
     return mFollowActor;
+}
+
+void Game::SetPlayer(FollowActor* actor)
+{
+    mFollowActor = actor;
 }
 
 Renderer* Game::GetRenderer() const

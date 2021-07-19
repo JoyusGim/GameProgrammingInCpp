@@ -38,6 +38,30 @@ void FollowCamera::Update(float deltaTime)
     SetViewMatrix(view);
 }
 
+void FollowCamera::LoadProperties(const rapidjson::Value& inObj)
+{
+    CameraComponent::LoadProperties(inObj);
+
+    JsonHelper::Get<Vector3>(inObj, "actualPos", mActualPos);
+    JsonHelper::Get<Vector3>(inObj, "velocity", mVelocity);
+    JsonHelper::Get<float>(inObj, "horzDist", mHorzDist);
+    JsonHelper::Get<float>(inObj, "vertDist", mVertDist);
+    JsonHelper::Get<float>(inObj, "targetDist", mTargetDist);
+    JsonHelper::Get<float>(inObj, "springConstant", mSpringConstant);
+}
+
+void FollowCamera::SaveProperties(rapidjson::Document::AllocatorType& alloc, rapidjson::Value& inObj) const
+{
+    CameraComponent::SaveProperties(alloc, inObj);
+
+    JsonHelper::Add<Vector3>(alloc, inObj, "actualPos", mActualPos);
+    JsonHelper::Add<Vector3>(alloc, inObj, "velocity", mVelocity);
+    JsonHelper::Add<float>(alloc, inObj, "horzDist", mHorzDist);
+    JsonHelper::Add<float>(alloc, inObj, "vertDist", mVertDist);
+    JsonHelper::Add<float>(alloc, inObj, "targetDist", mTargetDist);
+    JsonHelper::Add<float>(alloc, inObj, "springConstant", mSpringConstant);
+}
+
 void FollowCamera::SnapToIdeal()
 {
     mActualPos = ComputeCameraPos();

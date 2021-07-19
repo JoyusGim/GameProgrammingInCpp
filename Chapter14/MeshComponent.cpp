@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "Texture.h"
 #include "VertexArray.h"
+#include "LevelLoader.h"
 
 MeshComponent::MeshComponent(Actor* owner, bool isSkeletal /* = false */)	:
 	Component(owner),
@@ -40,6 +41,25 @@ void MeshComponent::Draw(Shader* shader)
 void MeshComponent::SetMesh(Mesh* mesh)
 {
 	mMesh = mesh;
+}
+
+void MeshComponent::LoadProperties(const rapidjson::Value& inObj)
+{
+	Component::LoadProperties(inObj);
+
+	std::string meshFile;
+	if (JsonHelper::Get<std::string>(inObj, "meshFile", meshFile))
+	{
+		SetMesh(mOwner->GetGame()->GetRenderer()->GetMesh(meshFile));
+	}
+
+	int idx;
+	if (JsonHelper::Get<int>(inObj, "textureIndex", idx))
+	{
+		mTextureIndex = static_cast<size_t>(idx);
+	}
+
+	JsonHelper::Get<bool>(inObj, "isSkeletal", mIsSkeletal);
 }
 
 void MeshComponent::SetTextureIndex(size_t index)

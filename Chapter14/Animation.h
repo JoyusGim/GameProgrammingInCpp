@@ -10,6 +10,7 @@ class Animation
 	float mDuration;
 	float mFrameDuration;
 	std::vector<std::vector<BoneTransform>> mTracks;
+	std::string mFileName;
 
 public:
 	bool Load(const std::string& fileName);
@@ -26,5 +27,6 @@ public:
 	size_t GetNumFrames() const;
 	float GetDuration() const;
 	float GetFrameDuration() const;
+	const std::string& GetFileName() const;
 };
 

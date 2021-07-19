@@ -2,6 +2,8 @@
 
 #include <vector>
 #include "Math.h"
+#include <rapidjson\document.h>
+#include "Component.h"
 
 class Actor
 {
@@ -12,6 +14,22 @@ public:
 		PAUSE,
 		DEAD
 	};
+
+	enum TypeID
+	{
+		ACTOR = 0,
+		BALLACTOR,
+		CAMERAACTOR,
+		FOLLOWACTOR,
+		FPSACTOR,
+		ORBITACTOR,
+		PLANEACTOR,
+		SPLINEACTOR,
+		TARGETACTOR,
+		NUM_ACTOR_TYPES
+	};
+
+	static const char* sTypeNames[NUM_ACTOR_TYPES];
 
 private:
 	Vector3 mPosition;
@@ -36,6 +54,7 @@ public:
 	void ComputeWorldTransform();
 
 	void AddComponent(class Component* component);
+	const std::vector<class Component*>& GetComponents() const;
 	void RemoveComponent(class Component* component);
 
 	void SetPosition(float x, float y);
@@ -53,4 +72,19 @@ public:
 	class Game* GetGame() const;
 
 	void RotateToNewForward(const Vector3& forward);
+
+	virtual void LoadProperties(const rapidjson::Value& inObj);
+	virtual void SaveProperties(rapidjson::Document::AllocatorType& alloc, rapidjson::Value& inObj) const;
+
+	template <typename T>
+	static Actor* Create(class Game* game, const rapidjson::Value& inObj)
+	{
+		T* t = new T(game);
+		t->LoadProperties(inObj);
+		return t;
+	}
+
+	Component* GetComponentOfType(Component::TypeID type);
+
+	virtual TypeID GetType() const { return ACTOR; }
 };

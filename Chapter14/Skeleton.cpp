@@ -128,6 +128,7 @@ bool Skeleton::Load(const std::string& fileName)
 
         mBones.emplace_back(temp);
     }
+    mFileName = fileName;
 
     ComputeGlobalInvBindPose();
 
@@ -152,4 +153,9 @@ const std::vector<Skeleton::Bone>& Skeleton::GetBones() const
 const std::vector<Matrix4> Skeleton::GetGlobalInvBindPoses() const
 {
     return mGlobalInvBindPoses;
+}
+
+const std::string& Skeleton::GetFileName() const
+{
+    return mFileName;
 }

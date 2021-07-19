@@ -110,7 +110,7 @@ bool Animation::Load(const std::string& fileName)
             mTracks[boneIndex].emplace_back(temp);
         }
     }
-
+    mFileName = fileName;
     return true;
 }
 
@@ -239,4 +239,9 @@ float Animation::GetDuration() const
 float Animation::GetFrameDuration() const
 {
     return mFrameDuration;
+}
+
+const std::string& Animation::GetFileName() const
+{
+    return mFileName;
 }

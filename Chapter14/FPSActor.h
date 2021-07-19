@@ -25,5 +25,7 @@ public:
     void FixCollisions();
 
     void Shoot();
+
+    TypeID GetType() const override { return Actor::FPSACTOR; }
 };
 

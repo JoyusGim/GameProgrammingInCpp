@@ -2,6 +2,19 @@
 #include "Game.h"
 #include "Component.h"
 #include "InputSystem.h"
+#include "LevelLoader.h"
+
+const char* Actor::sTypeNames[NUM_ACTOR_TYPES] = {
+	"Actor",
+	"BallActor",
+	"CameraActor",
+	"FollowActor",
+	"FPSActor",
+	"OrbitActor",
+	"PlaneActor",
+	"SplineActor",
+	"TargetActor"
+};
 
 Actor::Actor(Game* game)	:
 	mGame{ game },
@@ -84,6 +97,11 @@ void Actor::AddComponent(class Component* component)
 	}
 
 	mComponents.insert(iter, component);
+}
+
+const std::vector<class Component*>& Actor::GetComponents() const
+{
+	return mComponents;
 }
 
 void Actor::RemoveComponent(class Component* component)
@@ -180,4 +198,54 @@ void Actor::RotateToNewForward(const Vector3& forward)
 		axis.Normalize();
 		SetRotate(Quaternion(axis, angle));
 	}
+}
+
+void Actor::LoadProperties(const rapidjson::Value& inObj)
+{
+	std::string state;
+	if (JsonHelper::Get<std::string>(inObj, "state", state))
+	{
+		if (state == "active")
+			SetState(State::ACTIVE);
+		else if (state == "paused")
+			SetState(State::PAUSE);
+		else if (state == "dead")
+			SetState(State::DEAD);
+		else
+			SDL_Log("Unknown Actor state %s", state.c_str());
+	}
+
+	JsonHelper::Get<Vector3>(inObj, "position", mPosition);
+	JsonHelper::Get<Quaternion>(inObj, "rotation", mRotation);
+	JsonHelper::Get<float>(inObj, "scale", mScale);
+	ComputeWorldTransform();
+}
+
+void Actor::SaveProperties(rapidjson::Document::AllocatorType& alloc, rapidjson::Value& inObj) const
+{
+	std::string state = "active";
+	if (mState == State::PAUSE)
+		state = "paused";
+	else if (mState == State::DEAD)
+		state = "dead";
+
+	JsonHelper::Add<std::string>(alloc, inObj, "state", state);
+	JsonHelper::Add<Vector3>(alloc, inObj, "position", mPosition);
+	JsonHelper::Add<Quaternion>(alloc, inObj, "rotation", mRotation);
+	JsonHelper::Add<float>(alloc, inObj, "scale", mScale);
+}
+
+Component* Actor::GetComponentOfType(Component::TypeID type)
+{
+	Component* comp = nullptr;
+	for (Component* c : mComponents)
+	{
+		if (c->GetType() == type)
+		{
+			comp = c;
+			break;
+		}
+	}
+
+	return comp;
 }

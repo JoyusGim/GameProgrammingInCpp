@@ -12,5 +12,7 @@ public:
 
     void ActorInput(const struct InputState& input) override;
     void UpdateActor(float deltaTime) override;
+
+    TypeID GetType() const override { return Actor::SPLINEACTOR; }
 };
 

@@ -86,8 +86,8 @@ void HUD::Update(float deltaTime)
 
 void HUD::Draw(Shader* shader)
 {
-	Texture* cross = mTargetEnemy ? mCrosshairEnemy : mCrosshair;
-	DrawTexture(shader, cross, Vector2::Zero, 2.f);
+	//Texture* cross = mTargetEnemy ? mCrosshairEnemy : mCrosshair;
+	//DrawTexture(shader, cross, Vector2::Zero, 2.f);
 
 	const Vector2 cRadarPos(-390.f, 275.f);
 	DrawTexture(shader, mRadar, cRadarPos);
@@ -98,8 +98,8 @@ void HUD::Draw(Shader* shader)
 	}
 	DrawTexture(shader, mRadarArrow, cRadarPos);
 
-	Texture* mirror = mGame->GetRenderer()->GetMirrorTexture();
-	DrawTexture(shader, mirror, Vector2(-350.f, -250.f), 1.f, true);
+	//Texture* mirror = mGame->GetRenderer()->GetMirrorTexture();
+	//DrawTexture(shader, mirror, Vector2(-350.f, -250.f), 1.f, true);
 }
 
 void HUD::AddTarget(TargetComponent* target)

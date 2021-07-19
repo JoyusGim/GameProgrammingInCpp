@@ -11,5 +11,7 @@ public:
 
 	void UpdateActor(float deltaTime) override;
 	void ActorInput(const struct InputState& keystate) override;
+
+	TypeID GetType() const override { return Actor::CAMERAACTOR; }
 };
 

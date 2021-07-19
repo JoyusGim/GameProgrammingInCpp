@@ -26,6 +26,8 @@ FollowActor::FollowActor(Game* game)	:
 
 	MirrorCamera* mirror = new MirrorCamera(this);
 	mirror->SnapToIdeal();
+
+	game->SetPlayer(this);
 }
 
 void FollowActor::ActorInput(const InputState& input)

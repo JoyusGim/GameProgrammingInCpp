@@ -5,5 +5,7 @@ class TargetActor :
 {
 public:
     TargetActor(class Game* game);
+
+    TypeID GetType() const override { return Actor::TARGETACTOR; }
 };
 

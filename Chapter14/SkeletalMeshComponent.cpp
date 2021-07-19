@@ -69,6 +69,44 @@ void SkeletalMeshComponent::Update(float deltaTime)
 	}
 }
 
+void SkeletalMeshComponent::LoadProperties(const rapidjson::Value& inObj)
+{
+	MeshComponent::LoadProperties(inObj);
+
+	std::string skelFile;
+	if (JsonHelper::Get<std::string>(inObj, "skelFile", skelFile))
+	{
+		SetSkeleton(mOwner->GetGame()->GetSkeleton(skelFile));
+	}
+
+	std::string animFile;
+	if (JsonHelper::Get<std::string>(inObj, "animFile", animFile))
+	{
+		PlayAnimation(mOwner->GetGame()->GetAnimation(animFile));
+	}
+
+	JsonHelper::Get<float>(inObj, "animPlayRate", mAnimPlayRate);
+	JsonHelper::Get<float>(inObj, "animTime", mCurrAnimTime);
+}
+
+void SkeletalMeshComponent::SaveProperties(rapidjson::Document::AllocatorType& alloc, rapidjson::Value& inObj) const
+{
+	MeshComponent::SaveProperties(alloc, inObj);
+
+	if (mSkeleton)
+	{
+		JsonHelper::Add<std::string>(alloc, inObj, "skelFile", mSkeleton->GetFileName());
+	}
+
+	if (mCurrAnimation)
+	{
+		JsonHelper::Add<std::string>(alloc, inObj, "animFile", mCurrAnimation->GetFileName());
+	}
+
+	JsonHelper::Add<float>(alloc, inObj, "animPlayRate", mAnimPlayRate);
+	JsonHelper::Add<float>(alloc, inObj, "animTime", mCurrAnimTime);
+}
+
 void SkeletalMeshComponent::ComputeMatrixPalette()
 {
 	const std::vector<Matrix4>& globalInvVindPoses =

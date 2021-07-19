@@ -53,6 +53,24 @@ void MoveComponent::Update(float deltaTime)
 	*/
 }
 
+void MoveComponent::LoadProperties(const rapidjson::Value& inObj)
+{
+	Component::LoadProperties(inObj);
+
+	JsonHelper::Get<float>(inObj, "angularSpeed", mAngularSpeed);
+	JsonHelper::Get<float>(inObj, "forwardSpeed", mForwardSpeed);
+	JsonHelper::Get<float>(inObj, "strafeSpeed", mStrafeSpeed);
+}
+
+void MoveComponent::SaveProperties(rapidjson::Document::AllocatorType& alloc, rapidjson::Value& inObj) const
+{
+	Component::SaveProperties(alloc, inObj);
+
+	JsonHelper::Add<float>(alloc, inObj, "angularSpeed", mAngularSpeed);
+	JsonHelper::Add<float>(alloc, inObj, "forwardSpeed", mForwardSpeed);
+	JsonHelper::Add<float>(alloc, inObj, "strafeSpeed", mStrafeSpeed);
+}
+
 float MoveComponent::GetAngularSpeed() const
 {
 	return mAngularSpeed;

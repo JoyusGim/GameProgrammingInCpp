@@ -19,7 +19,10 @@ public:
     FollowCamera(class Actor* owner);
 
     void Update(float deltaTime) override;
+    void LoadProperties(const rapidjson::Value& inObj) override;
+    void SaveProperties(rapidjson::Document::AllocatorType& alloc, rapidjson::Value& inObj) const override;
 
     void SnapToIdeal();
+    TypeID GetType() const override { return TypeID::FollowCamera; }
 };
 

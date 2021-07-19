@@ -21,5 +21,6 @@ public:
     void SetTargetDist(float dist);
 
     void SnapToIdeal();
+    TypeID GetType() const override { return TypeID::MirrorCamera; }
 };
 

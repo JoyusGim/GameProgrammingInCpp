@@ -90,6 +90,8 @@ public:
 	void RemovePointLight(class PointLightComponent* light);
 
 	void SetAmbientLight(const Vector3& ambient);
+	const Vector3& GetAmbientLight() const;
+
 	DirectionalLight& GetDirectionalLight();
 
 	Vector3 Unproject(const Vector3& screenPoint) const;

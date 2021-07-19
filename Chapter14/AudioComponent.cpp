@@ -87,3 +87,8 @@ void AudioComponent::StopAllEvents()
     }
     mEvents3D.clear();
 }
+
+Component::TypeID AudioComponent::GetType() const
+{
+    return TypeID::AudioComponent;
+}

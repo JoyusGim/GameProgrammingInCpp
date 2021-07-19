@@ -535,6 +535,11 @@ void Renderer::SetAmbientLight(const Vector3& ambient)
     mAmbientLight = ambient;
 }
 
+const Vector3& Renderer::GetAmbientLight() const
+{
+    return mAmbientLight;
+}
+
 DirectionalLight& Renderer::GetDirectionalLight()
 {
     return mDirLight;

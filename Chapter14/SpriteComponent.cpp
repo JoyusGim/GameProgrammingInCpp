@@ -43,6 +43,31 @@ void SpriteComponent::Draw(Shader* shader)
 	}
 }
 
+void SpriteComponent::LoadProperties(const rapidjson::Value& inObj)
+{
+	Component::LoadProperties(inObj);
+
+	std::string texFile;
+	if (JsonHelper::Get<std::string>(inObj, "textureFile", texFile))
+	{
+		SetTexture(mOwner->GetGame()->GetRenderer()->GetTexture(texFile));
+	}
+
+	JsonHelper::Get<int>(inObj, "drawOrder", mDrawOrder);
+}
+
+void SpriteComponent::SaveProperties(rapidjson::Document::AllocatorType& alloc, rapidjson::Value& inObj) const
+{
+	Component::SaveProperties(alloc, inObj);
+
+	if (mTexture)
+	{
+		JsonHelper::Add<std::string>(alloc, inObj, "textureFile", mTexture->GetFileName());
+	}
+
+	JsonHelper::Add<int>(alloc, inObj, "drawOrder", mDrawOrder);
+}
+
 void SpriteComponent::SetTexture(Texture* texture)
 {
 	mTexture = texture;

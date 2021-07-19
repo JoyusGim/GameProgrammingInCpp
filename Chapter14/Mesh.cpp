@@ -2,7 +2,6 @@
 #include "Game.h"
 #include "Renderer.h"
 #include "Math.h"
-#include "VertexArray.h"
 #include <SDL.h>
 #include <fstream>
 #include <sstream>
@@ -14,6 +13,22 @@ union Vertex
 {
     float f;
     uint8_t b[4];
+};
+
+const int BinaryVersion = 1;
+
+struct MeshBinHeader
+{
+    char mSignature[4] = { 'G', 'M', 'S', 'H' };
+    uint32_t mVersion = BinaryVersion;
+    VertexArray::Layout mLayout = VertexArray::PosNormTex;
+
+    uint32_t mNumTextures = 0;
+    uint32_t mNumVerts = 0;
+    uint32_t mNumIndices = 0;
+    AABB mBox{ Vector3::Zero, Vector3::Zero };
+    float mRadius = 0.f;
+    float mSpecPower = 100.f;
 };
 }
 
@@ -31,6 +46,12 @@ Mesh::~Mesh()
 
 bool Mesh::Load(const std::string& fileName, Renderer* renderer)
 {
+    mFileName = fileName;
+    if (LoadBinary(fileName + ".bin", renderer))
+    {
+        return true;
+    }
+
     std::ifstream ifs(fileName);
     if (!ifs.is_open())
     {
@@ -87,10 +108,11 @@ bool Mesh::Load(const std::string& fileName, Renderer* renderer)
     mSpecPower = static_cast<float>(doc["specularPower"].GetDouble());
 
     // 텍스처 로딩
+    std::vector<std::string> textureNames;
     for (rapidjson::SizeType i = 0; i < textures.Size(); i++)
     {
         std::string texName = textures[i].GetString();
-
+        textureNames.emplace_back(texName);
         Texture* t = renderer->GetTexture(texName);
         // 매쉬에 등록된 텍스처를 로딩하는데 실패했다면
         if (t == nullptr)
@@ -197,9 +219,15 @@ bool Mesh::Load(const std::string& fileName, Renderer* renderer)
     }
 
     // 버텍스 어레이 생성
-    mVertexArray = new VertexArray(
-        vertices.data(), static_cast<unsigned>(vertices.size()) / vertSize,
+    unsigned int numVerts = static_cast<unsigned>(vertices.size()) / vertSize;
+    mVertexArray = new VertexArray(vertices.data(), numVerts,
         layout, indices.data(), static_cast<unsigned>(indices.size())
+    );
+
+    SaveBinary(fileName + ".bin", vertices.data(),
+        numVerts, layout, indices.data(),
+        static_cast<unsigned>(indices.size()),
+        textureNames, mBox, mRadius, mSpecPower
     );
 
     return true;
@@ -209,6 +237,93 @@ void Mesh::Unload()
 {
     delete mVertexArray;
     mVertexArray = nullptr;
+}
+
+void Mesh::SaveBinary(const std::string& fileName, const void* verts, const uint32_t numVerts, VertexArray::Layout layout, const uint32_t* indices, uint32_t numIndices, const std::vector<std::string>& textureNames, const AABB& box, float radius, float specPower)
+{
+    MeshBinHeader header;
+    header.mLayout = layout;
+    header.mNumTextures = static_cast<unsigned>(textureNames.size());
+    header.mNumVerts = numVerts;
+    header.mNumIndices = numIndices;
+    header.mBox = box;
+    header.mRadius = radius;
+
+    std::ofstream outFile(fileName, std::ios::out | std::ios::binary);
+    if (outFile.is_open())
+    {
+        outFile.write(reinterpret_cast<char*>(&header), sizeof(header));
+
+        for (const auto& tex : textureNames)
+        {
+            uint16_t nameSize = static_cast<uint16_t>(tex.length() + 1);
+            outFile.write(reinterpret_cast<char*>(&nameSize), sizeof(nameSize));
+            outFile.write(tex.c_str(), nameSize - 1);
+            outFile.write("\0", 1);
+        }
+
+        unsigned vertexSize = VertexArray::GetVertexSize(layout);
+        outFile.write(reinterpret_cast<const char*>(verts), numVerts * vertexSize);
+        outFile.write(reinterpret_cast<const char*>(indices), numIndices * sizeof(uint32_t));
+
+    }
+}
+
+bool Mesh::LoadBinary(const std::string& fileName, Renderer* renderer)
+{
+    std::ifstream inFile(fileName, std::ios::in | std::ios::binary);
+    if (inFile.is_open())
+    {
+        MeshBinHeader header;
+        inFile.read(reinterpret_cast<char*>(&header), sizeof(header));
+
+        char* sig = header.mSignature;
+        if (sig[0] != 'G' || sig[1] != 'M' || sig[2] != 'S' || sig[3] != 'H' ||
+            header.mVersion != BinaryVersion)
+        {
+            return false;
+        }
+
+        for (uint32_t i = 0; i < header.mNumTextures; i++)
+        {
+            uint16_t nameSize = 0;
+            inFile.read(reinterpret_cast<char*>(&nameSize), sizeof(nameSize));
+
+            char* texName = new char[nameSize];
+            inFile.read(texName, nameSize);
+
+            Texture* t = renderer->GetTexture(texName);
+            if (t == nullptr)
+            {
+                t = renderer->GetTexture("Assets/Default.png");
+            }
+            mTextures.emplace_back(t);
+
+            delete[] texName;
+        }
+
+        unsigned vertexSize = VertexArray::GetVertexSize(header.mLayout);
+        char* verts = new char[header.mNumVerts * vertexSize];
+        uint32_t* indices = new uint32_t[header.mNumIndices];
+        inFile.read(verts, header.mNumVerts * vertexSize);
+        inFile.read(reinterpret_cast<char*>(indices), header.mNumIndices * sizeof(uint32_t));
+
+        mVertexArray = new VertexArray(verts, header.mNumVerts, header.mLayout, indices, header.mNumIndices);
+
+        delete[] verts;
+        delete[] indices;
+
+        mBox = header.mBox;
+        mRadius = header.mRadius;
+        mSpecPower = header.mSpecPower;
+
+        return true;
+    }
+    else
+    {
+        SDL_Log("Failed to load binary mesh file %s\n", fileName.c_str());
+        return false;
+    }
 }
 
 VertexArray* Mesh::GetVertexArray() const

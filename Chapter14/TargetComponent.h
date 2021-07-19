@@ -6,5 +6,6 @@ class TargetComponent :
 public:
     TargetComponent(class Actor* owner);
     ~TargetComponent();
+    TypeID GetType() const override { return TypeID::TargetComponent; }
 };
 

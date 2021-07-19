@@ -18,5 +18,6 @@ public:
 
     SoundEvent PlayEvent(const std::string& name);
     void StopAllEvents();
+    TypeID GetType() const override;
 };
 

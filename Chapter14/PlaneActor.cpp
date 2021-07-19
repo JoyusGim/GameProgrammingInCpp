@@ -14,6 +14,4 @@ PlaneActor::PlaneActor(Game* game)	:
 	mc->SetMesh(mesh);
 	mBox = new BoxComponent(this);
 	mBox->SetObjectBox(mesh->GetBox());
-
-	game->AddPlane(this);
 }

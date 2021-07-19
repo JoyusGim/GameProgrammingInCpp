@@ -16,7 +16,11 @@ public:
 
 	virtual void Draw(class Shader* shader);
 
+	void LoadProperties(const rapidjson::Value& inObj) override;
+	void SaveProperties(rapidjson::Document::AllocatorType& alloc, rapidjson::Value& inObj) const override;
+
 	void SetTexture(class Texture* texture);
 	int GetDrawOrder() const;
+	TypeID GetType() const override { return TypeID::SpriteComponent; }
 };
 

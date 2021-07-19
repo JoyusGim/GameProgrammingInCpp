@@ -18,5 +18,6 @@ public:
     float GetMaxPitch() const;
     void SetPitch(float pitch);
     float GetPitch() const;
+    TypeID GetType() const override { return TypeID::FPSCamera; }
 };
 

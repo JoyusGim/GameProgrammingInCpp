@@ -14,5 +14,7 @@ public:
 	void SetPlayer(Actor* player);
 
 	void HitTarget();
+
+	TypeID GetType() const override { return Actor::BALLACTOR; }
 };
 

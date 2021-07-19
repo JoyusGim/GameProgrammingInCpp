@@ -16,6 +16,7 @@ public:
 private:
 	std::vector<Bone> mBones;
 	std::vector<Matrix4> mGlobalInvBindPoses;
+	std::string mFileName;
 
 	void ComputeGlobalInvBindPose();
 
@@ -26,5 +27,6 @@ public:
 	const Bone& GetBone(size_t idx);
 	const std::vector<Bone>& GetBones() const;
 	const std::vector<Matrix4> GetGlobalInvBindPoses() const;
+	const std::string& GetFileName() const;
 };
 

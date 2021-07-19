@@ -11,5 +11,6 @@ public:
     void Update(float deltaTime) override;
 
     void SetPlayer(Actor* player) { mPlayer = player; }
+    TypeID GetType() const override { return TypeID::BallMove; }
 };
 

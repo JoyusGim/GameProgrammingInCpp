@@ -65,6 +65,8 @@ bool Texture::Load(const std::string& fileName)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, largest);
     }
 
+    mFileName = fileName;
+
     return true;
 }
 
@@ -122,4 +124,9 @@ void Texture::CreateForRendering(int width, int height, unsigned int format)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+}
+
+const std::string& Texture::GetFileName() const
+{
+    return mFileName;
 }

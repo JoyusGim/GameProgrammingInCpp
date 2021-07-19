@@ -15,5 +15,6 @@ public:
 
     void ProcessInput(const struct InputState& input) override;
     void Update(float deltaTime) override;
+    TypeID GetType() const override { return TypeID::OrbitCamera; }
 };
 

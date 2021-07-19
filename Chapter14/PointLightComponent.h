@@ -20,5 +20,6 @@ public:
     void SetSpecColor(const Vector3& color);
     void SetInnerRadius(float radius);
     void SetOuterRadius(float radius);
+    TypeID GetType() const override { return TypeID::PointLightComponent; }
 };
 

@@ -19,5 +19,7 @@ public:
 	
 	unsigned int GetNumIndices() const;
 	unsigned int GetNumVerts() const;
+
+	static unsigned int GetVertexSize(VertexArray::Layout layout);
 };
 

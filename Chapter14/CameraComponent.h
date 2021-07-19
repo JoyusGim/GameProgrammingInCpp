@@ -8,5 +8,6 @@ protected:
 
 public:
     CameraComponent(class Actor* owner);
+    TypeID GetType() const override { return TypeID::CameraComponent; }
 };
 

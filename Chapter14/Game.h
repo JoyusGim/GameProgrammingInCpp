@@ -53,6 +53,7 @@ public:
 	void Shutdown();
 
 	void AddActor(class Actor* actor);
+	const std::vector<class Actor*>& GetActors() const;
 	void RemoveActor(class Actor* actor);
 
 	void AddPlane(class PlaneActor* plane);
@@ -60,6 +61,7 @@ public:
 	void LoadText(const std::string& fileName);
 
 	class FollowActor* GetPlayer() const;
+	void SetPlayer(class FollowActor* actor);
 	class Renderer* GetRenderer() const;
 	class InputSystem* GetInputSystem() const;
 	class AudioSystem* GetAudioSystem() const;

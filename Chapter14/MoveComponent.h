@@ -15,6 +15,8 @@ public:
 	MoveComponent(class Actor* actor, int updateOrder = 10);
 
 	void Update(float deltaTime) override;
+	void LoadProperties(const rapidjson::Value& inObj) override;
+	void SaveProperties(rapidjson::Document::AllocatorType& alloc, rapidjson::Value& inObj) const override;
 
 	float GetAngularSpeed() const;
 	void SetAngularSpeed(float speed);
@@ -26,5 +28,6 @@ public:
 	void SetMass(float mass);
 
 	void AddForce(const Vector3& force);
+	TypeID GetType() const override { return TypeID::MoveComponent; }
 };
 

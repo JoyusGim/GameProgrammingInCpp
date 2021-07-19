@@ -30,5 +30,6 @@ public:
     void SetPaused(bool paused);
 
     void Restart();
+    TypeID GetType() const override { return TypeID::SplineCamera; }
 };
 
